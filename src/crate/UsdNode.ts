@@ -5,6 +5,7 @@ import type { Tokens } from "./Tokens.ts"
 import { ValueRep } from "./ValueRep.js"
 import { JUMP_NEXT_IS_CHILD_JUMP_TO_SIBLING, JUMP_NEXT_IS_CHILD_NO_SIBLINGS, JUMP_NO_CHILD_NEXT_IS_SIBLING, JUMP_NO_CHILD_NO_SIBLINGS } from "./Paths.ts"
 import type { Specifier } from "./Specifier.ts"
+import type { ListOp } from "./Fields.ts"
 
 // Prim
 //   Attribute (is a property)
@@ -257,6 +258,13 @@ export class UsdNode {
         if (value && value.length > 0) {
             this.crate.fieldsets.fieldset_indices.push(
                 this.crate.fields.setTokenVector(name, value)
+            )
+        }
+    }
+    protected setTokenListOp(name: string, value?: ListOp<string>) {
+        if (value) {
+            this.crate.fieldsets.fieldset_indices.push(
+                this.crate.fields.setTokenListOp("apiSchemas", value)
             )
         }
     }

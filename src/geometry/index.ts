@@ -69,6 +69,10 @@ export class Xform extends Xformable {
     }
 }
 
+/**
+ * Boundable introduces the ability for a prim to persistently
+ * cache a rectilinear, local-space, extent.
+ */
 export class Boundable extends Xformable {
     set extent(value: ArrayLike<number> | undefined) {
         this.deleteChild("extent")
@@ -77,10 +81,24 @@ export class Boundable extends Xformable {
         }
     }
 }
+/**
+ * Base class for all geometric primitives.  
+ *   
+ *   Gprim encodes basic graphical properties such as _doubleSided_ and
+ *   _orientation_, and provides primvars for "display color" and "display
+ *   opacity" that travel with geometry to be used as shader overrides.
+ */
 export class Gprim extends Boundable {
     // color3f[] primvars:displayColor
     // float[] primvars:displayOpacity
     // uniform bool doubleSided = false
+    set doubleSided(value: boolean | undefined) {
+        this.deleteChild("doubleSided")
+        if (value !== undefined) {
+            const attr = new Attribute(this.crate, this, "doubleSided", value)
+            attr.variability = Variability.Uniform
+        }
+    }
     // uniform token orientation = "rightHanded" "leftHanded"
 }
 
@@ -133,6 +151,41 @@ export class PointBased extends Gprim {
 }
 
 export class Mesh extends PointBased {
+    constructor(parent: UsdNode, name: string) {
+        super(parent.crate, parent, -1, name, true)
+        this.spec_type = SpecType.Prim
+        this.specifier = Specifier.Def
+        this.typeName = "Mesh"
+    }
+
+    override encodeFields(): void {
+        super.encodeFields()
+        this.setTokenListOp("apiSchemas", this.apiSchemas)
+        this.setBoolean("active", true)
+    }
+
+    private apiSchemas?: ListOp<string>
+
+    protected prependApiSchema(name: string) {
+        if (this.apiSchemas === undefined) {
+            this.apiSchemas = {}
+        }
+        if (this.apiSchemas.prepend === undefined) {
+            this.apiSchemas.prepend = []
+        }
+        if (this.apiSchemas.prepend.find(it => it === name) === undefined) {
+            this.apiSchemas.prepend.push(name)
+        }
+    }
+
+    set blenderDataName(value: string | undefined) {
+        this.deleteChild("userProperties:blender:data_name")
+        if (value !== undefined) {
+            const attr = new Attribute(this.crate, this, "userProperties:blender:data_name", value)
+            attr.custom = true
+        }
+    }
+
     set faceVertexIndices(value: ArrayLike<number> | undefined) {
         this.deleteChild("faceVertexIndices")
         if (value !== undefined) {
@@ -145,25 +198,27 @@ export class Mesh extends PointBased {
             new IntArrayAttr(this.crate, this, "faceVertexCounts", value)
         }
     }
-    doubleSided?: boolean
-    apiSchemas?: ListOp<string>
-    materialBinding?: ListOp<UsdNode>
-    nonOverlapping?: boolean
 
-    constructor(parent: UsdNode, name: string) {
-        super(parent.crate, parent, -1, name, true)
-        this.spec_type = SpecType.Prim
-        this.specifier = Specifier.Def
-        this.typeName = "Mesh"
-
-        const attr = new Attribute(parent.crate, this, "userProperties:blender:data_name", this.name)
-        attr.custom = true
+    // MaterialBindingAPI: material:binding
+    // pxr/usd/usdShade/schema.usda
+    set materialBinding(value: ListOp<UsdNode> | undefined) {
+        this.deleteChild("material:binding")
+        if (value !== undefined) {
+            this.prependApiSchema("MaterialBindingAPI")
+            new Relationship(this.crate, this, "material:binding", value)
+        }
+    }
+    /**
+     * GeomSubset
+     */
+    set familyType(value: "partition" | "nonOverlapping" | "unrestricted" | undefined) {
+        this.deleteChild("subsetFamily:materialBind:familyType")
+        if (value !== undefined) {
+            new VariabilityAttr(this.crate, this, "subsetFamily:materialBind:familyType", Variability.Uniform, value)
+        }
     }
 
-    override encodeFields(): void {
-        super.encodeFields()
-        this.setBoolean("active", true)
-    }
+
 
     // override encode() {
     //     const crate = this.crate
@@ -466,8 +521,8 @@ export class Attribute extends UsdNode {
 }
 
 export class GeomSubset extends UsdNode {
-    constructor(crate: Crate, parent: UsdNode, name: string) {
-        super(crate, parent, -1, name, false)
+    constructor(parent: UsdNode, name: string) {
+        super(parent.crate, parent, -1, name, false)
         this.spec_type = SpecType.Prim
     }
     override encode() {

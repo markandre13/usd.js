@@ -6,7 +6,7 @@
 enum Code { Common, Int8, Int16, Int32 };
 
 interface ARGE {
-    input: number[],
+    input: ArrayLike<number>,
     output: DataView,
     cur: number,
     commonValue: number,
@@ -51,7 +51,7 @@ function encodeNHelper(N: number, arg: ARGE) {
     ++arg.codesOut
 }
 
-export function encodeIntegers(input: number[], output: DataView) {
+export function encodeIntegers(input: ArrayLike<number>, output: DataView) {
     if (input.length === 0) {
         return 0
     }

@@ -214,6 +214,83 @@ describe("USD", () => {
                 })
             })
         })
+        describe("Xform", () => {
+            it("plain", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot(crate)
+                const xform = new Xform(pseudoRoot, "Cube")
+
+                const rootOut = wrangle(pseudoRoot, "/Cube").toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "Prim",
+                    "name": "Cube",
+                    "prim": true,
+                    "fields": {
+                        "specifier": {
+                            "type": "Specifier",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "Def"
+                        },
+                        "typeName": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "Xform"
+                        }
+                    }
+                })
+            })
+            it(".customData", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot(crate)
+                const xform = new Xform(pseudoRoot, "Cube")
+                xform.customData = {
+                    foo: true
+                }
+
+                const rootOut = wrangle(pseudoRoot, "/Cube").toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "Prim",
+                    "name": "Cube",
+                    "prim": true,
+                    "fields": {
+                        "specifier": {
+                            "type": "Specifier",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "Def"
+                        },
+                        "typeName": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "Xform"
+                        },
+                        "customData": {
+                            "type": "Dictionary",
+                            "inline": false,
+                            "array": false,
+                            "compressed": false,
+                            "value": {
+                                "foo": true
+                            }
+                        }
+                    }
+                })
+
+            })
+        })
         describe("Mesh", () => {
             it("plain", () => {
                 const crate = makeCreate()
@@ -724,17 +801,18 @@ describe("USD", () => {
             compare(pseudoRootIn, orig)
         })
         xit("cube-smooth-faces.usdc") // only normals differ from cube-flat-faces.usdc
-        it("cube-flat-colored-faces.usdc", () => {
+        it.only("cube-flat-colored-faces.usdc", () => {
             // read the original
-            const buffer = readFileSync("spec/examples/cube-flat-colored-faces.usdc")
-            const stageIn = new UsdStage(buffer)
-            const origPseudoRoot = stageIn.getPrimAtPath("/")!
-            const orig = origPseudoRoot.toJSON()
+            // const buffer = readFileSync("spec/examples/cube-flat-colored-faces.usdc")
+            // const stageIn = new UsdStage(buffer)
+            // const origPseudoRoot = stageIn.getPrimAtPath("/")!
+            // const orig = origPseudoRoot.toJSON()
             // console.log(JSON.stringify(orig, undefined, 4))
+            // writeFileSync("spec/examples/cube-colored-faces.json", JSON.stringify(orig, undefined, 4))
 
             // read an adjusted, good enough variant of the original's JSON
-            // const buffer = readFileSync("spec/examples/cube-colored-faces.json")
-            // const orig = JSON.parse(buffer.toString())
+            const buffer = readFileSync("spec/examples/cube-colored-faces.json")
+            const orig = JSON.parse(buffer.toString())
 
             const crate = new Crate()
             crate.paths._nodes = []
@@ -747,6 +825,7 @@ describe("USD", () => {
             //     defaultPrim = "root"
             // )
             const pseudoRoot = new PseudoRoot(crate)
+            pseudoRoot.defaultPrim = "root"
             pseudoRoot.documentation = "Blender v5.0.1"
 
             // def Xform "root" (
@@ -778,22 +857,19 @@ describe("USD", () => {
 
             //         def Mesh "Mesh" ( active = true ) { ... }
             const mesh = new Mesh(cube, "Cube")
-            mesh.points = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1]
+            mesh.doubleSided = true
+            mesh.extent = [-1, -1, -1, 1, 1, 1]
             mesh.faceVertexCounts = [4, 4, 4, 4, 4, 4]
             mesh.faceVertexIndices = [0, 4, 6, 2, 3, 2, 6, 7, 7, 6, 4, 5, 5, 1, 3, 7, 1, 0, 2, 3, 5, 4, 0, 1]
-            mesh.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]
-            mesh.texCoords = [0.625, 0.5, 0.875, 0.5, 0.875, 0.75, 0.625, 0.75, 0.375, 0.75, 0.625, 0.75, 0.625, 1, 0.375, 1, 0.375, 0, 0.625, 0, 0.625, 0.25, 0.375, 0.25, 0.125, 0.5, 0.375, 0.5, 0.375, 0.75, 0.125, 0.75, 0.375, 0.5, 0.625, 0.5, 0.625, 0.75, 0.375, 0.75, 0.375, 0.25, 0.625, 0.25, 0.625, 0.5, 0.375, 0.5]
-            mesh.extent = [-1, -1, -1, 1, 1, 1]
-            mesh.subdivisionScheme = "none"
-            mesh.doubleSided = true
-
-            mesh.apiSchemas = {
-                prepend: ["MaterialBindingAPI"]
-            }
             mesh.materialBinding = {
                 // explicit: ["/root/_materials/red"]
             }
-            mesh.nonOverlapping = true
+            mesh.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]
+            mesh.points = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1]
+            mesh.texCoords = [0.625, 0.5, 0.875, 0.5, 0.875, 0.75, 0.625, 0.75, 0.375, 0.75, 0.625, 0.75, 0.625, 1, 0.375, 1, 0.375, 0, 0.625, 0, 0.625, 0.25, 0.375, 0.25, 0.125, 0.5, 0.375, 0.5, 0.375, 0.75, 0.125, 0.75, 0.375, 0.5, 0.625, 0.5, 0.625, 0.75, 0.375, 0.75, 0.375, 0.25, 0.625, 0.25, 0.625, 0.5, 0.375, 0.5]
+            mesh.subdivisionScheme = "none"
+            mesh.familyType = "nonOverlapping"
+            mesh.blenderDataName = "Cube"
 
             // this mesh addionally needs
             //   fields:
@@ -803,26 +879,26 @@ describe("USD", () => {
             //     doubleSided,                             DONE
             //     material:binding,                        PARTIAL, NEEDS RELATION TO USDNODE
             //     subsetFamily:materialBind:familyType     DONE
-            const blueFace = new GeomSubset(crate, mesh, "blue")
+            const blueFace = new GeomSubset(mesh, "blue")
             // new Attribute(crate, blue, "elementType", "face") // needs to be token, needs variablity
             new VariabilityAttr(crate, blueFace, "elementType", Variability.Uniform, "face")
             new VariabilityAttr(crate, blueFace, "familyName", Variability.Uniform, "materialBind")
             new IntArrayAttr(crate, blueFace, "indices", [5])
             new Relationship(crate, blueFace, "material:binding", { explicit: [blue] })
 
-            const grayFace = new GeomSubset(crate, mesh, "gray")
+            const grayFace = new GeomSubset(mesh, "gray")
             new VariabilityAttr(crate, grayFace, "elementType", Variability.Uniform, "face")
             new VariabilityAttr(crate, grayFace, "familyName", Variability.Uniform, "materialBind")
             new IntArrayAttr(crate, grayFace, "indices", [1, 2, 3])
             new Relationship(crate, grayFace, "material:binding", { explicit: [gray] })
 
-            const greenFace = new GeomSubset(crate, mesh, "green")
+            const greenFace = new GeomSubset(mesh, "green")
             new VariabilityAttr(crate, greenFace, "elementType", Variability.Uniform, "face")
             new VariabilityAttr(crate, greenFace, "familyName", Variability.Uniform, "materialBind")
             new IntArrayAttr(crate, greenFace, "indices", [4])
             new Relationship(crate, greenFace, "material:binding", { explicit: [green] })
 
-            const redFace = new GeomSubset(crate, mesh, "red")
+            const redFace = new GeomSubset(mesh, "red")
             new VariabilityAttr(crate, redFace, "elementType", Variability.Uniform, "face")
             new VariabilityAttr(crate, redFace, "familyName", Variability.Uniform, "materialBind")
             new IntArrayAttr(crate, redFace, "indices", [0])
@@ -845,7 +921,7 @@ describe("USD", () => {
             writeFileSync("original.json", JSON.stringify(orig, undefined, 4))
             writeFileSync("constructed.json", JSON.stringify(pseudoRootIn, undefined, 4))
 
-            // compare(pseudoRootIn, orig)
+            compare(pseudoRootIn, orig)
         })
         it("cube-smooth-sharp-faces.usdc")
         it("armature.usdc")

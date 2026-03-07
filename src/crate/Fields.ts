@@ -250,7 +250,8 @@ export class Fields {
                         const o = v as object
                         if (o instanceof UsdNode) {
                             if (o.index === -1) {
-                                throw Error(`Fields._setListOp("${name}", ...): object ${o.getFullPathName()} has no index yet`)
+                                // throw Error(`Fields._setListOp("${name}", ...): object ${o.getFullPathName()} has no index yet`)
+                                console.log(`Fields._setListOp("${name}", ...): object ${o.getFullPathName()} has no index yet`)
                             }
                             this.data.writeUint32(o.index)
                         }
@@ -284,11 +285,15 @@ export class Fields {
         this.valueReps.writeUint32(this.data.tell())
         this.valueReps.skip(2)
         this.valueReps.writeUint8(CrateDataType.Int)
-        this.valueReps.writeUint8(IsArrayBit_)
-
-        this.data.writeUint64(value.length)
-        for (let i = 0; i < value.length; ++i) {
-            this.data.writeInt32(value[i])
+        if (value.length < 4) { // TODO: needed?
+            this.valueReps.writeUint8(IsArrayBit_)
+            this.data.writeUint64(value.length)
+            for (let i = 0; i < value.length; ++i) {
+                this.data.writeInt32(value[i])
+            }
+        } else {
+            this.valueReps.writeUint8(IsArrayBit_ | IsCompressedBit)
+            this.data.writeCompressedIntegers(value)
         }
         return idx
     }

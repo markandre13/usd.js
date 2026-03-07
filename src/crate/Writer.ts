@@ -188,11 +188,11 @@ export class Writer {
     }
 
     // higher order, maybe to be placed elsewhere
-    writeCompressedIntegers(value: number[]) {
+    writeCompressedIntegers(value: ArrayLike<number>) {
         this.writeUint64(value.length)
         this.writeCompressedIntWithoutSize(value)
     }
-    writeCompressedIntWithoutSize(value: number[]) {
+    writeCompressedIntWithoutSize(value: ArrayLike<number>) {
         // console.log(`writeCompressedInt(): ENTER`)
         // console.log(value)
         const buffer = new Uint8Array(value.length * 8 + 32)
