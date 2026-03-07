@@ -136,6 +136,110 @@ export class Xformable extends Imageable { }
 
 //   subdivision modifier becomes part of the Mesh... but might loose sharp edges (?)
 
+export class UsdNode2 extends UsdNode {
+    override encode() {
+        const crate = this.crate
+        this.index = crate.paths._nodes.length
+        crate.paths._nodes.push(this)
+
+        crate.specs.pathIndexes.push(this.index)
+        crate.specs.specTypeIndexes.push(this.spec_type!)
+        crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
+        this.encodeFields()
+        crate.fieldsets.fieldset_indices.push(-1)
+
+        for (const child of this.children) {
+            child.encode()
+        }
+    }
+}
+
+export class PseudoRoot2 extends UsdNode2 {
+    metersPerUnit?: number
+    documentation?: string
+    upAxis?: "X" | "Y" | "Z"
+    defaultPrim?: string
+
+    constructor(crate: Crate) {
+        super(crate, undefined, -1, "/", true)
+        this.spec_type = SpecType.PseudoRoot
+    }
+
+    override encodeFields(): void {
+        super.encodeFields()
+        this.setDouble("metersPerUnit", this.metersPerUnit)
+        this.setString("documentation", this.documentation)
+        this.setToken("upAxis", this.upAxis)
+        this.setToken("defaultPrim", this.defaultPrim)
+    }
+}
+
+export class Mesh2 extends UsdNode2 {
+    // fields
+    protected specifier?: Specifier
+    protected typeName?: string
+
+    // attributes
+    set points(value: ArrayLike<number> | undefined) {
+        this.deleteChild("points")
+        if (value !== undefined) {
+            new Vec3fArrayAttr(this.crate, this, "points", value, "point3f[]")
+        }
+    }
+    set faceVertexCounts(value: ArrayLike<number> | undefined) {
+        this.deleteChild("faceVertexCounts")
+        if (value !== undefined) {
+            new IntArrayAttr(this.crate, this, "faceVertexCounts", value)
+        }
+    }
+    set faceVertexIndices(value: ArrayLike<number> | undefined) {
+        this.deleteChild("faceVertexIndices")
+        if (value !== undefined) {
+            new IntArrayAttr(this.crate, this, "faceVertexIndices", value)
+        }
+    }
+    set normals(value: ArrayLike<number> | undefined) {
+        this.deleteChild("normals")
+        if (value !== undefined) {
+            const attr = new Vec3fArrayAttr(this.crate, this, "normals", value, "normal3f[]")
+            attr.interpolation = "faceVarying"
+        }
+    }
+    set texCoords(value: ArrayLike<number> | undefined) {
+        this.deleteChild("primvars:st")
+        if (value !== undefined) {
+            const attr = new Vec2fArrayAttr(this.crate, this, "primvars:st", value, "texCoord2f[]")
+            attr.interpolation = "faceVarying"
+        }
+    }
+    set extent(value: ArrayLike<number> | undefined) {
+        this.deleteChild("extent")
+        if (value !== undefined) {
+            new Vec3fArrayAttr(this.crate, this, "extent", value, "float3[]")
+        }
+    }
+    set subdivisionScheme(value: SubdivisionScheme | undefined) {
+        this.deleteChild("subdivisionScheme")
+        if (value !== undefined) {
+            new VariabilityAttr(this.crate, this, "subdivisionScheme", Variability.Uniform, value)
+        }
+    }
+
+    constructor(parent: UsdNode, name: string) {
+        super(parent.crate, parent, -1, name, true)
+        this.spec_type = SpecType.Prim
+        this.specifier = Specifier.Def
+        this.typeName = "Mesh"
+    }
+
+    override encodeFields(): void {
+        this.setSpecifier("specifier", this.specifier)
+        this.setToken("typeName", this.typeName)
+        super.encodeFields()
+    }
+}
+
+
 export class PseudoRoot extends UsdNode {
     metersPerUnit: number = 1.0
     documentation = "makehuman.js"

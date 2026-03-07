@@ -20,7 +20,7 @@ import { FieldSets } from "../src/crate/FieldSets.ts"
 import { Specs } from "../src/crate/Specs.ts"
 import { compressBound } from "../src/compression/lz4.ts"
 import { decodeIntegers, encodeIntegers } from "../src/compression/integers.ts"
-import { Attribute, DomeLight, GeomSubset, Material, Mesh, PseudoRoot, Scope, Xform } from "../src/geometry/index.ts"
+import { Attribute, DomeLight, GeomSubset, Material, Mesh, PseudoRoot2, PseudoRoot, Scope, Xform, Mesh2 } from "../src/geometry/index.ts"
 import { ValueRep } from "../src/crate/ValueRep.ts"
 import { IntArrayAttr, Relationship, VariabilityAttr } from "../src/attributes/index.ts"
 import { Variability } from "../src/crate/Variability.ts"
@@ -49,12 +49,447 @@ import { Variability } from "../src/crate/Variability.ts"
 //   * the actual string values are within TOKENS might be there as compressing them together
 //     might be more efficient
 
-
 //
 // ATTRIBUTES
 //
 
+function makeCreate() {
+    const crate = new Crate()
+    crate.paths._nodes = []
+    return crate
+}
+
+function wrangle(root: UsdNode, path: string = "/") {
+    root.crate.serialize(root)
+    const stage = new UsdStage(Buffer.from(root.crate.writer.buffer))
+    return stage.getPrimAtPath(path)
+}
+
 describe("USD", () => {
+    describe("nodes", () => {
+        describe("PseudoRoot", () => {
+            it("plain", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                const rootOut = wrangle(pseudoRoot).toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "PseudoRoot",
+                    "name": "/",
+                    "prim": true
+                })
+            })
+            it(".metersPerUnit", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                pseudoRoot.metersPerUnit = 3
+
+                const rootOut = wrangle(pseudoRoot).toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "fields": {
+                        "metersPerUnit": {
+                            "array": false,
+                            "compressed": false,
+                            "inline": true,
+                            "type": "Double",
+                            "value": 3
+                        }
+                    },
+                    "type": "PseudoRoot",
+                    "name": "/",
+                    "prim": true
+                })
+            })
+            it(".documentation", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                pseudoRoot.documentation = "foobar"
+
+                const rootOut = wrangle(pseudoRoot).toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "PseudoRoot",
+                    "name": "/",
+                    "prim": true,
+                    "fields": {
+                        "documentation": {
+                            "type": "String",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "foobar"
+                        }
+                    }
+                })
+            })
+            it(".upAxis", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                pseudoRoot.upAxis = "Y"
+
+                const rootOut = wrangle(pseudoRoot).toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "PseudoRoot",
+                    "name": "/",
+                    "prim": true,
+                    "fields": {
+                        "upAxis": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "Y"
+                        }
+                    }
+                })
+            })
+            // defaultPrim
+            // TODO: test "properties" and "primChildren" on UsdNode
+            it("primChildren", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                const mesh = new Mesh2(pseudoRoot, "Cube")
+                const rootOut = wrangle(pseudoRoot).toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "PseudoRoot",
+                    "name": "/",
+                    "prim": true,
+                    "fields": {
+                        "primChildren": {
+                            "type": "TokenVector",
+                            "inline": false,
+                            "array": false,
+                            "compressed": false,
+                            "value": [
+                                "Cube"
+                            ]
+                        }
+                    },
+                    "children": [
+                        {
+                            "type": "Prim",
+                            "name": "Cube",
+                            "prim": true,
+                            "fields": {
+                                "specifier": {
+                                    "type": "Specifier",
+                                    "inline": true,
+                                    "array": false,
+                                    "compressed": false,
+                                    "value": "Def"
+                                },
+                                "typeName": {
+                                    "type": "Token",
+                                    "inline": true,
+                                    "array": false,
+                                    "compressed": false,
+                                    "value": "Mesh"
+                                }
+                            }
+                        }
+                    ]
+                })
+            })
+        })
+        describe("Mesh", () => {
+            it("plain", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                const mesh = new Mesh2(pseudoRoot, "Cube")
+
+                const rootOut = wrangle(pseudoRoot, "/Cube").toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "Prim",
+                    "name": "Cube",
+                    "prim": true,
+                    "fields": {
+                        "specifier": {
+                            "type": "Specifier",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "Def"
+                        },
+                        "typeName": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "Mesh"
+                        }
+                    }
+                })
+            })
+            it(".points", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                const mesh = new Mesh2(pseudoRoot, "Cube")
+                mesh.points = [6, 6, 6]
+                mesh.points = [0, 1, 2, 3, 4, 5]
+
+                const rootOut = wrangle(pseudoRoot, "/Cube").getAttribute("points")!.toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "Attribute",
+                    "name": "points",
+                    "prim": false,
+                    "fields": {
+                        "typeName": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "point3f[]"
+                        },
+                        "default": {
+                            "type": "Vec3f",
+                            "inline": false,
+                            "array": true,
+                            "compressed": false,
+                            "value": [0, 1, 2, 3, 4, 5]
+                        }
+                    }
+                })
+            })
+            it(".faceVertexCounts", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                const mesh = new Mesh2(pseudoRoot, "Cube")
+                mesh.faceVertexCounts = [6, 6, 6]
+                mesh.faceVertexCounts = [4, 4, 4]
+
+                const rootOut = wrangle(pseudoRoot, "/Cube").getAttribute("faceVertexCounts")!.toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "Attribute",
+                    "name": "faceVertexCounts",
+                    "prim": false,
+                    "fields": {
+                        "typeName": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "int[]"
+                        },
+                        "default": {
+                            "type": "Int",
+                            "inline": false,
+                            "array": true,
+                            "compressed": false,
+                            "value": [4, 4, 4]
+                        }
+                    }
+                })
+            })
+            it(".faceVertexIndices", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                const mesh = new Mesh2(pseudoRoot, "Cube")
+                mesh.faceVertexIndices = [6, 6, 6]
+                mesh.faceVertexIndices = [4, 4, 4]
+
+                const rootOut = wrangle(pseudoRoot, "/Cube").getAttribute("faceVertexIndices")!.toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "Attribute",
+                    "name": "faceVertexIndices",
+                    "prim": false,
+                    "fields": {
+                        "typeName": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "int[]"
+                        },
+                        "default": {
+                            "type": "Int",
+                            "inline": false,
+                            "array": true,
+                            "compressed": false,
+                            "value": [4, 4, 4]
+                        }
+                    }
+                })
+            })
+            it(".normals", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                const mesh = new Mesh2(pseudoRoot, "Cube")
+                mesh.normals = [6, 6, 6]
+                mesh.normals = [4, 4, 4]
+
+                const rootOut = wrangle(pseudoRoot, "/Cube").getAttribute("normals")!.toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "Attribute",
+                    "name": "normals",
+                    "prim": false,
+                    "fields": {
+                        "typeName": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "normal3f[]"
+                        },
+                        "default": {
+                            "type": "Vec3f",
+                            "inline": false,
+                            "array": true,
+                            "compressed": false,
+                            "value": [4, 4, 4]
+                        },
+                        "interpolation": {
+                            "array": false,
+                            "compressed": false,
+                            "inline": true,
+                            "type": "Token",
+                            "value": "faceVarying"
+                        }
+                    }
+                })
+            })
+            it(".texCoords", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                const mesh = new Mesh2(pseudoRoot, "Cube")
+                mesh.texCoords = [6, 6,]
+                mesh.texCoords = [4, 4]
+
+                const rootOut = wrangle(pseudoRoot, "/Cube").getAttribute("primvars:st")!.toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "Attribute",
+                    "name": "primvars:st",
+                    "prim": false,
+                    "fields": {
+                        "typeName": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "texCoord2f[]"
+                        },
+                        "interpolation": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "faceVarying"
+                        },
+                        "default": {
+                            "type": "Vec2f",
+                            "inline": false,
+                            "array": true,
+                            "compressed": false,
+                            "value": [4, 4]
+                        }
+                    }
+                })
+            })
+            it(".extent", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                const mesh = new Mesh2(pseudoRoot, "Cube")
+                mesh.extent = [0, 0, 0, 0, 0, 0]
+                mesh.extent = [1, 2, 3, 4, 5, 6]
+
+                const rootOut = wrangle(pseudoRoot, "/Cube").getAttribute("extent")!.toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "Attribute",
+                    "name": "extent",
+                    "prim": false,
+                    "fields": {
+                        "typeName": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "float3[]"
+                        },
+                        "default": {
+                            "type": "Vec3f",
+                            "inline": false,
+                            "array": true,
+                            "compressed": false,
+                            "value": [1, 2, 3, 4, 5, 6]
+                        }
+                    }
+                })
+            })
+            it(".subdivisionScheme", () => {
+                const crate = makeCreate()
+                const pseudoRoot = new PseudoRoot2(crate)
+                const mesh = new Mesh2(pseudoRoot, "Cube")
+                mesh.subdivisionScheme = "bilinear"
+                mesh.subdivisionScheme = "catmullClark"
+
+                const rootOut = wrangle(pseudoRoot, "/Cube").getAttribute("subdivisionScheme")!.toJSON()
+
+                // console.log(JSON.stringify(rootOut, undefined, 4))
+
+                expect(rootOut).to.deep.equal({
+                    "type": "Attribute",
+                    "name": "subdivisionScheme",
+                    "prim": false,
+                    "fields": {
+                        "typeName": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "token"
+                        },
+                        "variability": {
+                            "type": "Variability",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "Uniform"
+                        },
+                        "default": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "catmullClark"
+                        }
+                    }
+                })
+            })
+        })
+    })
     it("read cube.usdc and compare it with cube.json", () => {
         const buffer = readFileSync("spec/cube.usdc")
         const stage = new UsdStage(buffer)
@@ -93,54 +528,54 @@ describe("USD", () => {
             openusd: /pxr/usd/bin/usdcat/usdcat.cpp
             // stage = UsdStage::Open(input);
             // layer = SdfLayer::FindOrOpen(input);
-
+     
             stage is the top. might be one file, or that one file might included other files
-
+     
             stage (file)
               layer (file)
                 prims
-
+     
             stage presents the scenegraph, which is a tree of prims
             stage
               root
                 usd files
                   prims
-
+     
             there's the python api!
-
+     
             from pxr import Usd
             stage = Usd.Stage.CreateNew('HelloWorldRedux.usda')
             xform = stage.DefinePrim('/hello', 'Xform')
             sphere = stage.DefinePrim('/hello/world', 'Sphere')
             stage.GetRootLayer().Save()
-
+     
             #usda 1.0
-
+     
             def Xform "hello"
             {
                 def Sphere "world"
                 {
                 }
             }
-
+     
             from pxr import Usd, Vt
             stage = Usd.Stage.Open('HelloWorld.usda')
             xform = stage.GetPrimAtPath('/hello')
             sphere = stage.GetPrimAtPath('/hello/world')
             
             xform.GetPropertyNames()
-
+     
             >>> extentAttr = sphere.GetAttribute('extent')
             >>> extentAttr.Get()
             Vt.Vec3fArray(2, (Gf.Vec3f(-1.0, -1.0, -1.0), Gf.Vec3f(1.0, 1.0, 1.0)))
-
+     
             >>> radiusAttr = sphere.GetAttribute('radius')
             >>> radiusAttr.Set(2)
             True
             >>> extentAttr.Set(extentAttr.Get() * 2)
-
+     
             usd-core
-
+     
             # Create a new, empty USD stage where 3D scenes are assembled
             Usd.Stage.CreateNew()
             
@@ -149,9 +584,9 @@ describe("USD", () => {
             
             # Saves all layers in a USD stage
             Usd.Stage.Save()
-
+     
             https://docs.nvidia.com/learn-openusd/latest/stage-setting/usd-modules.html
-
+     
             * The USD code repository is made up of four core packages: base, usd, imaging, and usdImaging.
             * to read/write usd data, the packages base and usd are needed
             * When authoring or querying USD data, you will almost always use a few common USD modules such as Usd, Sdf, and Gf along with some schema modules.
@@ -317,25 +752,25 @@ describe("USD", () => {
             new VariabilityAttr(crate, blueFace, "elementType", Variability.Uniform, "face")
             new VariabilityAttr(crate, blueFace, "familyName", Variability.Uniform, "materialBind")
             new IntArrayAttr(crate, blueFace, "indices", [5])
-            new Relationship(crate, blueFace, "material:binding", { explicit: [ blue ] })
+            new Relationship(crate, blueFace, "material:binding", { explicit: [blue] })
 
             const grayFace = new GeomSubset(crate, mesh, "gray")
             new VariabilityAttr(crate, grayFace, "elementType", Variability.Uniform, "face")
             new VariabilityAttr(crate, grayFace, "familyName", Variability.Uniform, "materialBind")
             new IntArrayAttr(crate, grayFace, "indices", [1, 2, 3])
-            new Relationship(crate, grayFace, "material:binding", { explicit: [ gray ] })
+            new Relationship(crate, grayFace, "material:binding", { explicit: [gray] })
 
             const greenFace = new GeomSubset(crate, mesh, "green")
             new VariabilityAttr(crate, greenFace, "elementType", Variability.Uniform, "face")
             new VariabilityAttr(crate, greenFace, "familyName", Variability.Uniform, "materialBind")
             new IntArrayAttr(crate, greenFace, "indices", [4])
-            new Relationship(crate, greenFace, "material:binding", { explicit: [ green ] })
+            new Relationship(crate, greenFace, "material:binding", { explicit: [green] })
 
             const redFace = new GeomSubset(crate, mesh, "red")
             new VariabilityAttr(crate, redFace, "elementType", Variability.Uniform, "face")
             new VariabilityAttr(crate, redFace, "familyName", Variability.Uniform, "materialBind")
             new IntArrayAttr(crate, redFace, "indices", [0])
-            new Relationship(crate, redFace, "material:binding", { explicit: [ red ] })
+            new Relationship(crate, redFace, "material:binding", { explicit: [red] })
 
             // _materials
 

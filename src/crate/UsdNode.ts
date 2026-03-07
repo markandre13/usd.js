@@ -4,6 +4,7 @@ import { isPrim, SpecType } from "./SpecType.ts"
 import type { Tokens } from "./Tokens.ts"
 import { ValueRep } from "./ValueRep.js"
 import { JUMP_NEXT_IS_CHILD_JUMP_TO_SIBLING, JUMP_NEXT_IS_CHILD_NO_SIBLINGS, JUMP_NO_CHILD_NEXT_IS_SIBLING, JUMP_NO_CHILD_NO_SIBLINGS } from "./Paths.ts"
+import type { Specifier } from "./Specifier.ts"
 
 // Prim
 //   Attribute (is a property)
@@ -44,6 +45,19 @@ export class UsdNode {
      * encode node into the various sections of the crate
      */
     encode() { }
+    encodeFields() {
+        this.setTokenVector("properties", this.children.filter(it => !isPrim(it.getType())).map(it => it.name))
+        this.setTokenVector("primChildren", this.children.filter(it => isPrim(it.getType())).map(it => it.name))
+    }
+    deleteChild(name: string) {
+        for (let i = 0; i < this.children.length; ++i) {
+            if (this.children[i].name === name) {
+                this.children.splice(i, 1)
+                break
+            }
+        }
+    }
+
     getType(): SpecType {
         return this.spec_type!
     }
@@ -187,6 +201,42 @@ export class UsdNode {
         if (jump === JUMP_NEXT_IS_CHILD_JUMP_TO_SIBLING) {
             arg.jumps[thisIndex] = arg.thisIndex - thisIndex + 1
             // console.log(`jump[${thisIndex}] to ${arg.thisIndex + 1} by ${arg.thisIndex - thisIndex + 1}`)
+        }
+    }
+
+    protected setDouble(name: string, value?: number) {
+        if (value !== undefined) {
+            this.crate.fieldsets.fieldset_indices.push(
+                this.crate.fields.setDouble(name, value)
+            )
+        }
+    }
+    protected setString(name: string, value?: string) {
+        if (value !== undefined) {
+            this.crate.fieldsets.fieldset_indices.push(
+                this.crate.fields.setString(name, value)
+            )
+        }
+    }
+    protected setSpecifier(name: string, value?: Specifier) {
+        if (value !== undefined) {
+            this.crate.fieldsets.fieldset_indices.push(
+                this.crate.fields.setSpecifier(name, value)
+            )
+        }
+    }
+    protected setToken(name: string, value?: string) {
+        if (value !== undefined) {
+            this.crate.fieldsets.fieldset_indices.push(
+                this.crate.fields.setToken(name, value)
+            )
+        }
+    }
+    protected setTokenVector(name: string, value?: string[]) {
+        if (value && value.length > 0) {
+            this.crate.fieldsets.fieldset_indices.push(
+                this.crate.fields.setTokenVector(name, value)
+            )
         }
     }
 }
