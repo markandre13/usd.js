@@ -6,6 +6,410 @@ import { isPrim, SpecType } from "../crate/SpecType.ts"
 import { UsdNode } from "../crate/UsdNode.ts"
 import { Variability } from "../crate/Variability.ts"
 
+export class SchemaBase extends UsdNode { }
+
+/**
+ * The base class for all _typed_ schemas (those that can impart a
+ * typeName to a UsdPrim), and therefore the base class for all
+ * concrete, instantiable "IsA" schemas.
+ *      
+ * UsdTyped implements a typeName-based query for its override of
+ * UsdSchemaBase::_IsCompatible().  It provides no other behavior.
+ * 
+ * defined in pxr/usd/usd/schema.usda
+ */
+export class Typed extends SchemaBase {
+    protected specifier?: Specifier
+    protected typeName?: string
+
+    override encodeFields(): void {
+        super.encodeFields()
+        this.setSpecifier("specifier", this.specifier)
+        this.setToken("typeName", this.typeName)
+    }
+}
+
+/**
+ * Base class for all prims that may require rendering or 
+ * visualization of some sort. The primary attributes of Imageable 
+ * are _visibility_ and _purpose_, which each provide instructions for
+ * what geometry should be included for processing by rendering and other
+ * computations.
+ *
+ * defined in pxr/usd/usdGeom/schema.usda
+ */
+export class Imageable extends Typed { }
+
+/**
+ * Base class for all transformable prims, which allows arbitrary
+ * sequences of component affine transformations to be encoded.
+ * 
+ * defined in pxr/usd/usdGeom/schema.usda
+ */
+export class Xformable extends Imageable { }
+
+/**
+ * Concrete prim schema for a transform, which implements Xformable
+ * 
+ * defined in pxr/usd/usdGeom/schema.usda
+ */
+export class Xform extends Xformable {
+    customData?: any
+
+    constructor(parent: UsdNode, name: string) {
+        super(parent.crate, parent, -1, name, true)
+        this.spec_type = SpecType.Prim
+        this.specifier = Specifier.Def
+        this.typeName = "Xform"
+    }
+
+    override encodeFields(): void {
+        super.encodeFields()
+        this.setCustomData("customData", this.customData)
+    }
+}
+
+export class Boundable extends Xformable {
+    set extent(value: ArrayLike<number> | undefined) {
+        this.deleteChild("extent")
+        if (value !== undefined) {
+            new Vec3fArrayAttr(this.crate, this, "extent", value, "float3[]")
+        }
+    }
+}
+export class Gprim extends Boundable {
+    // color3f[] primvars:displayColor
+    // float[] primvars:displayOpacity
+    // uniform bool doubleSided = false
+    // uniform token orientation = "rightHanded" "leftHanded"
+}
+
+// Cube size
+// Sphere radius
+// Cylinder
+// Capsule
+// Cone
+// Cylinder_1
+// Capsule_1
+// Plane
+
+export type SubdivisionScheme = "catmullClark" | "loop" | "bilinear" | "none"
+export type InterpolateBoundary = "none" | "edgeOnly" | "edgeAndCorner"
+export type FaceVaryingLinearInterpolation = "none" | "cornersOnly" | "cornersPlus1" | "cornersPlus2" | "boundaries" | "all"
+
+export class PointBased extends Gprim {
+    set points(value: ArrayLike<number> | undefined) {
+        this.deleteChild("points")
+        if (value !== undefined) {
+            new Vec3fArrayAttr(this.crate, this, "points", value, "point3f[]")
+        }
+    }
+    set texCoords(value: ArrayLike<number> | undefined) {
+        this.deleteChild("primvars:st")
+        if (value !== undefined) {
+            const attr = new Vec2fArrayAttr(this.crate, this, "primvars:st", value, "texCoord2f[]")
+            attr.interpolation = "faceVarying"
+        }
+    }
+    // vector3f[] velocities
+    // vector3f[] accelerations
+    set normals(value: ArrayLike<number> | undefined) {
+        this.deleteChild("normals")
+        if (value !== undefined) {
+            const attr = new Vec3fArrayAttr(this.crate, this, "normals", value, "normal3f[]")
+            attr.interpolation = "faceVarying"
+        }
+    }
+
+    // uniform token subdivisionScheme = "catmullClark" 
+    set subdivisionScheme(value: SubdivisionScheme | undefined) {
+        this.deleteChild("subdivisionScheme")
+        if (value !== undefined) {
+            new VariabilityAttr(this.crate, this, "subdivisionScheme", Variability.Uniform, value)
+        }
+    }
+    interpolateBoundary: InterpolateBoundary = "edgeAndCorner"
+    faceVaryingLinearInterpolation: FaceVaryingLinearInterpolation = "cornersPlus1"
+}
+
+export class Mesh extends PointBased {
+    set faceVertexIndices(value: ArrayLike<number> | undefined) {
+        this.deleteChild("faceVertexIndices")
+        if (value !== undefined) {
+            new IntArrayAttr(this.crate, this, "faceVertexIndices", value)
+        }
+    }
+    set faceVertexCounts(value: ArrayLike<number> | undefined) {
+        this.deleteChild("faceVertexCounts")
+        if (value !== undefined) {
+            new IntArrayAttr(this.crate, this, "faceVertexCounts", value)
+        }
+    }
+    doubleSided?: boolean
+    apiSchemas?: ListOp<string>
+    materialBinding?: ListOp<UsdNode>
+    nonOverlapping?: boolean
+
+    constructor(parent: UsdNode, name: string) {
+        super(parent.crate, parent, -1, name, true)
+        this.spec_type = SpecType.Prim
+        this.specifier = Specifier.Def
+        this.typeName = "Mesh"
+
+        const attr = new Attribute(parent.crate, this, "userProperties:blender:data_name", this.name)
+        attr.custom = true
+    }
+
+    override encodeFields(): void {
+        super.encodeFields()
+        this.setBoolean("active", true)
+    }
+
+    // override encode() {
+    //     const crate = this.crate
+    //     this.index = crate.paths._nodes.length
+    //     crate.paths._nodes.push(this)
+    //     crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
+    //     crate.specs.pathIndexes.push(this.index)
+    //     crate.specs.specTypeIndexes.push(this.spec_type!)
+
+    //     crate.fieldsets.fieldset_indices.push(
+    //         crate.fields.setSpecifier("specifier", Specifier.Def)
+    //     )
+    //     crate.fieldsets.fieldset_indices.push(
+    //         crate.fields.setToken("typeName", "Mesh")
+    //     )
+    //     if (this.apiSchemas) {
+    //         crate.fieldsets.fieldset_indices.push(
+    //             crate.fields.setTokenListOp("apiSchemas", this.apiSchemas)
+    //         )
+    //     }
+
+    //     const primChildren = this.children
+    //         .filter(it => isPrim(it.getType()))
+    //         .map(it => it.name)
+    //     if (primChildren.length > 0) {
+    //         crate.fieldsets.fieldset_indices.push(
+    //             crate.fields.setTokenVector("primChildren", primChildren)
+    //         )
+    //     }
+
+    //     crate.fieldsets.fieldset_indices.push(
+    //         crate.fields.setBoolean("active", true)
+    //     )
+
+    //     const properties: string[] = []
+
+    //     if (this.doubleSided !== undefined) {
+    //         properties.push("doubleSided")
+    //         const attr = new Attribute(crate, this, "doubleSided", this.doubleSided)
+    //         attr.variability = Variability.Uniform
+    //     }
+
+    //     if (this.extent !== undefined) {
+    //         properties.push("extent")
+    //         new Vec3fArrayAttr(crate, this, "extent", this.extent, "float3[]")
+    //     }
+    //     if (this.faceVertexCounts !== undefined) {
+    //         properties.push("faceVertexCounts")
+    //         new IntArrayAttr(crate, this, "faceVertexCounts", this.faceVertexCounts)
+    //     }
+    //     if (this.faceVertexIndices !== undefined) {
+    //         properties.push("faceVertexIndices")
+    //         new IntArrayAttr(crate, this, "faceVertexIndices", this.faceVertexIndices)
+    //     }
+    //     if (this.materialBinding !== undefined) {
+    //         properties.push("material:binding")
+    //         new Relationship(crate, this, "material:binding", this.materialBinding)
+    //     }
+    //     if (this.normals !== undefined) {
+    //         properties.push("normals")
+    //         const attr = new Vec3fArrayAttr(crate, this, "normals", this.normals, "normal3f[]")
+    //         attr.interpolation = "faceVarying"
+    //     }
+    //     if (this.points !== undefined) {
+    //         properties.push("points")
+    //         new Vec3fArrayAttr(crate, this, "points", this.points, "point3f[]")
+    //     }
+    //     if (this.texCoords) {
+    //         properties.push("primvars:st")
+    //         const attr = new Vec2fArrayAttr(crate, this, "primvars:st", this.texCoords, "texCoord2f[]")
+    //         attr.interpolation = "faceVarying"
+    //     }
+
+    //     {
+    //         properties.push("subdivisionScheme")
+    //         new VariabilityAttr(crate, this, "subdivisionScheme", Variability.Uniform, this.subdivisionScheme)
+    //     }
+
+    //     if (this.nonOverlapping === true) {
+    //         properties.push("subsetFamily:materialBind:familyType")
+    //         new VariabilityAttr(crate, this, "subsetFamily:materialBind:familyType", Variability.Uniform, "nonOverlapping")
+    //     }
+
+    //     {
+    //         properties.push("userProperties:blender:data_name")
+    //         const attr = new Attribute(crate, this, "userProperties:blender:data_name", this.name)
+    //         attr.custom = true
+    //     }
+
+    //     // userProperties:blender:data_name
+
+    //     crate.fieldsets.fieldset_indices.push(
+    //         crate.fields.setTokenVector("properties", properties)
+    //     )
+
+    //     crate.fieldsets.fieldset_indices.push(-1)
+    //     for (const child of this.children) {
+    //         child.encode()
+    //     }
+    // }
+}
+
+export class DomeLight extends UsdNode {
+    constructor(crate: Crate, parent: UsdNode, name: string) {
+        super(crate, parent, -1, name, true)
+        this.spec_type = SpecType.Prim
+    }
+    override encode() {
+        const crate = this.crate
+        this.index = crate.paths._nodes.length
+        crate.paths._nodes.push(this)
+        crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
+        crate.specs.pathIndexes.push(this.index)
+        crate.specs.specTypeIndexes.push(this.spec_type!)
+
+        crate.fieldsets.fieldset_indices.push(
+            crate.fields.setSpecifier("specifier", Specifier.Def)
+        )
+        crate.fieldsets.fieldset_indices.push(
+            crate.fields.setToken("typeName", "DomeLight")
+        )
+
+        const properties: string[] = []
+
+        {
+            properties.push("inputs:intensity")
+            new FloatAttr(crate, this, "inputs:intensity", 1)
+        }
+
+        {
+            properties.push("inputs:texture:file")
+            new AssetPathAttr(crate, this, "inputs:texture:file", "./textures/color_0C0C0C.exr")
+        }
+
+
+        // userProperties:blender:data_name
+
+        crate.fieldsets.fieldset_indices.push(
+            crate.fields.setTokenVector("properties", properties)
+        )
+
+        crate.fieldsets.fieldset_indices.push(-1)
+        for (const child of this.children) {
+            child.encode()
+        }
+    }
+}
+
+/**
+ * Scope is the simplest grouping primitive, and does not carry the
+ * baggage of transformability.  Note that transforms should inherit down
+ * through a Scope successfully - it is just a guaranteed no-op from a
+ * transformability perspective.
+ * 
+ * defined in pxr/usd/usdGeom/schema.usda
+ */
+export class Scope extends Imageable {
+    constructor(crate: Crate, parent: UsdNode, name: string) {
+        super(crate, parent, -1, name, true)
+        this.spec_type = SpecType.Prim
+    }
+
+    override encode() {
+        const crate = this.crate
+        this.index = crate.paths._nodes.length
+        crate.paths._nodes.push(this)
+        crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
+        crate.specs.pathIndexes.push(this.index)
+        crate.specs.specTypeIndexes.push(this.spec_type!)
+
+        crate.fieldsets.fieldset_indices.push(
+            crate.fields.setSpecifier("specifier", Specifier.Def)
+        )
+        crate.fieldsets.fieldset_indices.push(
+            crate.fields.setToken("typeName", "Scope")
+        )
+
+        const properties = this.children
+            .filter(it => !isPrim(it.getType()))
+            .map(it => it.name)
+        if (properties.length > 0) {
+            crate.fieldsets.fieldset_indices.push(
+                crate.fields.setTokenVector("properties", properties)
+            )
+        }
+
+        crate.fieldsets.fieldset_indices.push(
+            crate.fields.setTokenVector("primChildren", this.children
+                .filter(it => isPrim(it.getType()))
+                .map(it => it.name))
+        )
+
+        crate.fieldsets.fieldset_indices.push(-1)
+
+        for (const child of this.children) {
+            child.encode()
+        }
+    }
+
+}
+
+export class Material extends UsdNode {
+    constructor(crate: Crate, parent: UsdNode, name: string) {
+        super(crate, parent, -1, name, true)
+        this.spec_type = SpecType.Prim
+    }
+
+    override encode() {
+        const crate = this.crate
+        this.index = crate.paths._nodes.length
+        crate.paths._nodes.push(this)
+        crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
+        crate.specs.pathIndexes.push(this.index)
+        crate.specs.specTypeIndexes.push(this.spec_type!)
+
+        crate.fieldsets.fieldset_indices.push(
+            crate.fields.setSpecifier("specifier", Specifier.Def)
+        )
+        crate.fieldsets.fieldset_indices.push(
+            crate.fields.setToken("typeName", "Material")
+        )
+
+        const properties = this.children
+            .filter(it => !isPrim(it.getType()))
+            .map(it => it.name)
+        if (properties.length > 0) {
+            crate.fieldsets.fieldset_indices.push(
+                crate.fields.setTokenVector("properties", properties)
+            )
+        }
+
+        crate.fieldsets.fieldset_indices.push(
+            crate.fields.setTokenVector("primChildren", this.children
+                .filter(it => isPrim(it.getType()))
+                .map(it => it.name))
+        )
+
+        crate.fieldsets.fieldset_indices.push(-1)
+
+        for (const child of this.children) {
+            child.encode()
+        }
+    }
+
+}
+
 export class Attribute extends UsdNode {
     value: any
     variability?: Variability
@@ -107,516 +511,6 @@ export class GeomSubset extends UsdNode {
 
         crate.fieldsets.fieldset_indices.push(-1)
 
-        for (const child of this.children) {
-            child.encode()
-        }
-    }
-}
-
-export class SchemaBase extends UsdNode { }
-export class Typed extends SchemaBase { }
-export class Imageable extends Typed { }
-export class Xformable extends Imageable { }
-
-// blender mesh options and how they map to usd
-//   shade: flat | smooth
-//     'normals' are not per 'points' but 'faceVertexIndices'
-//     and the flat/smooth is encoded via those
-//   edge > mark sharp
-//   edge > mark seam (i guess this is for uv?)
-//   edge > bevel weight
-//   edge > edge crease
-//
-//   materials
-//     multiple materials for one mesh
-//       via GeomSubset which lists the faces
-//       viewport display is not stored but taken from color itself during import
-//   armature, weights
-//   blendshape
-
-//   subdivision modifier becomes part of the Mesh... but might loose sharp edges (?)
-
-export class UsdNode2 extends UsdNode {
-    override encode() {
-        const crate = this.crate
-        this.index = crate.paths._nodes.length
-        crate.paths._nodes.push(this)
-
-        crate.specs.pathIndexes.push(this.index)
-        crate.specs.specTypeIndexes.push(this.spec_type!)
-        crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
-        this.encodeFields()
-        crate.fieldsets.fieldset_indices.push(-1)
-
-        for (const child of this.children) {
-            child.encode()
-        }
-    }
-}
-
-export class PseudoRoot2 extends UsdNode2 {
-    metersPerUnit?: number
-    documentation?: string
-    upAxis?: "X" | "Y" | "Z"
-    defaultPrim?: string
-
-    constructor(crate: Crate) {
-        super(crate, undefined, -1, "/", true)
-        this.spec_type = SpecType.PseudoRoot
-    }
-
-    override encodeFields(): void {
-        super.encodeFields()
-        this.setDouble("metersPerUnit", this.metersPerUnit)
-        this.setString("documentation", this.documentation)
-        this.setToken("upAxis", this.upAxis)
-        this.setToken("defaultPrim", this.defaultPrim)
-    }
-}
-
-export class Mesh2 extends UsdNode2 {
-    // fields
-    protected specifier?: Specifier
-    protected typeName?: string
-
-    // attributes
-    set points(value: ArrayLike<number> | undefined) {
-        this.deleteChild("points")
-        if (value !== undefined) {
-            new Vec3fArrayAttr(this.crate, this, "points", value, "point3f[]")
-        }
-    }
-    set faceVertexCounts(value: ArrayLike<number> | undefined) {
-        this.deleteChild("faceVertexCounts")
-        if (value !== undefined) {
-            new IntArrayAttr(this.crate, this, "faceVertexCounts", value)
-        }
-    }
-    set faceVertexIndices(value: ArrayLike<number> | undefined) {
-        this.deleteChild("faceVertexIndices")
-        if (value !== undefined) {
-            new IntArrayAttr(this.crate, this, "faceVertexIndices", value)
-        }
-    }
-    set normals(value: ArrayLike<number> | undefined) {
-        this.deleteChild("normals")
-        if (value !== undefined) {
-            const attr = new Vec3fArrayAttr(this.crate, this, "normals", value, "normal3f[]")
-            attr.interpolation = "faceVarying"
-        }
-    }
-    set texCoords(value: ArrayLike<number> | undefined) {
-        this.deleteChild("primvars:st")
-        if (value !== undefined) {
-            const attr = new Vec2fArrayAttr(this.crate, this, "primvars:st", value, "texCoord2f[]")
-            attr.interpolation = "faceVarying"
-        }
-    }
-    set extent(value: ArrayLike<number> | undefined) {
-        this.deleteChild("extent")
-        if (value !== undefined) {
-            new Vec3fArrayAttr(this.crate, this, "extent", value, "float3[]")
-        }
-    }
-    set subdivisionScheme(value: SubdivisionScheme | undefined) {
-        this.deleteChild("subdivisionScheme")
-        if (value !== undefined) {
-            new VariabilityAttr(this.crate, this, "subdivisionScheme", Variability.Uniform, value)
-        }
-    }
-
-    constructor(parent: UsdNode, name: string) {
-        super(parent.crate, parent, -1, name, true)
-        this.spec_type = SpecType.Prim
-        this.specifier = Specifier.Def
-        this.typeName = "Mesh"
-    }
-
-    override encodeFields(): void {
-        this.setSpecifier("specifier", this.specifier)
-        this.setToken("typeName", this.typeName)
-        super.encodeFields()
-    }
-}
-
-
-export class PseudoRoot extends UsdNode {
-    metersPerUnit: number = 1.0
-    documentation = "makehuman.js"
-    upAxis = "Z"
-
-    constructor(crate: Crate) {
-        super(crate, undefined, -1, "/", true)
-        this.spec_type = SpecType.PseudoRoot
-    }
-
-    // defaultPrim = "root"
-
-    override encode() {
-        const crate = this.crate
-        this.index = crate.paths._nodes.length
-        crate.paths._nodes.push(this)
-
-        crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
-        crate.specs.pathIndexes.push(this.index)
-        crate.specs.specTypeIndexes.push(this.spec_type!)
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setDouble("metersPerUnit", this.metersPerUnit)
-        )
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setString("documentation", this.documentation)
-        )
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setToken("upAxis", this.upAxis)
-        )
-        if (this.children.length > 0) {
-            crate.fieldsets.fieldset_indices.push(
-                crate.fields.setTokenVector("primChildren", [this.children[0].name])
-            )
-            crate.fieldsets.fieldset_indices.push(
-                crate.fields.setToken("defaultPrim", this.children[0].name)
-            )
-        }
-        crate.fieldsets.fieldset_indices.push(-1)
-
-        for (const child of this.children) {
-            child.encode()
-        }
-    }
-}
-
-export class Scope extends UsdNode {
-    constructor(crate: Crate, parent: UsdNode, name: string) {
-        super(crate, parent, -1, name, true)
-        this.spec_type = SpecType.Prim
-    }
-
-    override encode() {
-        const crate = this.crate
-        this.index = crate.paths._nodes.length
-        crate.paths._nodes.push(this)
-        crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
-        crate.specs.pathIndexes.push(this.index)
-        crate.specs.specTypeIndexes.push(this.spec_type!)
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setSpecifier("specifier", Specifier.Def)
-        )
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setToken("typeName", "Scope")
-        )
-
-        const properties = this.children
-            .filter(it => !isPrim(it.getType()))
-            .map(it => it.name)
-        if (properties.length > 0) {
-            crate.fieldsets.fieldset_indices.push(
-                crate.fields.setTokenVector("properties", properties)
-            )
-        }
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setTokenVector("primChildren", this.children
-                .filter(it => isPrim(it.getType()))
-                .map(it => it.name))
-        )
-
-        crate.fieldsets.fieldset_indices.push(-1)
-
-        for (const child of this.children) {
-            child.encode()
-        }
-    }
-
-}
-
-export class Material extends UsdNode {
-    constructor(crate: Crate, parent: UsdNode, name: string) {
-        super(crate, parent, -1, name, true)
-        this.spec_type = SpecType.Prim
-    }
-
-    override encode() {
-        const crate = this.crate
-        this.index = crate.paths._nodes.length
-        crate.paths._nodes.push(this)
-        crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
-        crate.specs.pathIndexes.push(this.index)
-        crate.specs.specTypeIndexes.push(this.spec_type!)
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setSpecifier("specifier", Specifier.Def)
-        )
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setToken("typeName", "Material")
-        )
-
-        const properties = this.children
-            .filter(it => !isPrim(it.getType()))
-            .map(it => it.name)
-        if (properties.length > 0) {
-            crate.fieldsets.fieldset_indices.push(
-                crate.fields.setTokenVector("properties", properties)
-            )
-        }
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setTokenVector("primChildren", this.children
-                .filter(it => isPrim(it.getType()))
-                .map(it => it.name))
-        )
-
-        crate.fieldsets.fieldset_indices.push(-1)
-
-        for (const child of this.children) {
-            child.encode()
-        }
-    }
-
-}
-
-export class Xform extends Xformable {
-    customData?: any
-
-    constructor(crate: Crate, parent: UsdNode, name: string) {
-        super(crate, parent, -1, name, true)
-        this.spec_type = SpecType.Prim
-    }
-
-    override encode() {
-        const crate = this.crate
-        this.index = crate.paths._nodes.length
-        crate.paths._nodes.push(this)
-        crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
-        crate.specs.pathIndexes.push(this.index)
-        crate.specs.specTypeIndexes.push(this.spec_type!)
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setSpecifier("specifier", Specifier.Def)
-        )
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setToken("typeName", "Xform")
-        )
-        if (this.customData !== undefined) {
-            crate.fieldsets.fieldset_indices.push(
-                crate.fields.setDictionary("customData", this.customData)
-            )
-        }
-
-        const properties = this.children
-            .filter(it => !isPrim(it.getType()))
-            .map(it => it.name)
-        if (properties.length > 0) {
-            crate.fieldsets.fieldset_indices.push(
-                crate.fields.setTokenVector("properties", properties)
-            )
-        }
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setTokenVector("primChildren", this.children
-                .filter(it => isPrim(it.getType()))
-                .map(it => it.name))
-        )
-
-        crate.fieldsets.fieldset_indices.push(-1)
-
-        for (const child of this.children) {
-            child.encode()
-        }
-    }
-}
-
-export class Boundable extends Xformable {
-    extent?: ArrayLike<number>
-}
-export class Gprim extends Boundable {
-    // color3f[] primvars:displayColor
-    // float[] primvars:displayOpacity
-    // uniform bool doubleSided = false
-    // uniform token orientation = "rightHanded" "leftHanded"
-}
-
-// Cube size
-// Sphere radius
-// Cylinder
-// Capsule
-// Cone
-// Cylinder_1
-// Capsule_1
-// Plane
-
-export type SubdivisionScheme = "catmullClark" | "loop" | "bilinear" | "none"
-export type InterpolateBoundary = "none" | "edgeOnly" | "edgeAndCorner"
-export type FaceVaryingLinearInterpolation = "none" | "cornersOnly" | "cornersPlus1" | "cornersPlus2" | "boundaries" | "all"
-
-export class DomeLight extends UsdNode {
-    constructor(crate: Crate, parent: UsdNode, name: string) {
-        super(crate, parent, -1, name, true)
-        this.spec_type = SpecType.Prim
-    }
-    override encode() {
-        const crate = this.crate
-        this.index = crate.paths._nodes.length
-        crate.paths._nodes.push(this)
-        crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
-        crate.specs.pathIndexes.push(this.index)
-        crate.specs.specTypeIndexes.push(this.spec_type!)
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setSpecifier("specifier", Specifier.Def)
-        )
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setToken("typeName", "DomeLight")
-        )
-
-        const properties: string[] = []
-
-        {
-            properties.push("inputs:intensity")
-            new FloatAttr(crate, this, "inputs:intensity", 1)
-        }
-
-        {
-            properties.push("inputs:texture:file")
-            new AssetPathAttr(crate, this, "inputs:texture:file", "./textures/color_0C0C0C.exr")
-        }
-
-
-        // userProperties:blender:data_name
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setTokenVector("properties", properties)
-        )
-
-        crate.fieldsets.fieldset_indices.push(-1)
-        for (const child of this.children) {
-            child.encode()
-        }
-    }
-}
-
-export class PointBased extends Gprim {
-    points?: ArrayLike<number>
-    texCoords?: ArrayLike<number>
-    // vector3f[] velocities
-    // vector3f[] accelerations
-    normals?: ArrayLike<number>
-
-    // uniform token subdivisionScheme = "catmullClark" 
-    subdivisionScheme: SubdivisionScheme = "catmullClark"
-    interpolateBoundary: InterpolateBoundary = "edgeAndCorner"
-    faceVaryingLinearInterpolation: FaceVaryingLinearInterpolation = "cornersPlus1"
-}
-
-export class Mesh extends PointBased {
-    faceVertexIndices?: ArrayLike<number>
-    faceVertexCounts?: ArrayLike<number>
-    doubleSided?: boolean
-    apiSchemas?: ListOp<string>
-    materialBinding?: ListOp<UsdNode>
-    nonOverlapping?: boolean
-
-    constructor(crate: Crate, parent: UsdNode, name: string) {
-        super(crate, parent, -1, name, true)
-        this.spec_type = SpecType.Prim
-    }
-
-    override encode() {
-        const crate = this.crate
-        this.index = crate.paths._nodes.length
-        crate.paths._nodes.push(this)
-        crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
-        crate.specs.pathIndexes.push(this.index)
-        crate.specs.specTypeIndexes.push(this.spec_type!)
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setSpecifier("specifier", Specifier.Def)
-        )
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setToken("typeName", "Mesh")
-        )
-        if (this.apiSchemas) {
-            crate.fieldsets.fieldset_indices.push(
-                crate.fields.setTokenListOp("apiSchemas", this.apiSchemas)
-            )
-        }
-
-        const primChildren = this.children
-            .filter(it => isPrim(it.getType()))
-            .map(it => it.name)
-        if (primChildren.length > 0) {
-            crate.fieldsets.fieldset_indices.push(
-                crate.fields.setTokenVector("primChildren", primChildren)
-            )
-        }
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setBoolean("active", true)
-        )
-
-        const properties: string[] = []
-
-        if (this.doubleSided !== undefined) {
-            properties.push("doubleSided")
-            const attr = new Attribute(crate, this, "doubleSided", this.doubleSided)
-            attr.variability = Variability.Uniform
-        }
-
-        if (this.extent !== undefined) {
-            properties.push("extent")
-            new Vec3fArrayAttr(crate, this, "extent", this.extent, "float3[]")
-        }
-        if (this.faceVertexCounts !== undefined) {
-            properties.push("faceVertexCounts")
-            new IntArrayAttr(crate, this, "faceVertexCounts", this.faceVertexCounts)
-        }
-        if (this.faceVertexIndices !== undefined) {
-            properties.push("faceVertexIndices")
-            new IntArrayAttr(crate, this, "faceVertexIndices", this.faceVertexIndices)
-        }
-        if (this.materialBinding !== undefined) {
-            properties.push("material:binding")
-            new Relationship(crate, this, "material:binding", this.materialBinding)
-        }
-        if (this.normals !== undefined) {
-            properties.push("normals")
-            const attr = new Vec3fArrayAttr(crate, this, "normals", this.normals, "normal3f[]")
-            attr.interpolation = "faceVarying"
-        }
-        if (this.points !== undefined) {
-            properties.push("points")
-            new Vec3fArrayAttr(crate, this, "points", this.points, "point3f[]")
-        }
-        if (this.texCoords) {
-            properties.push("primvars:st")
-            const attr = new Vec2fArrayAttr(crate, this, "primvars:st", this.texCoords, "texCoord2f[]")
-            attr.interpolation = "faceVarying"
-        }
-
-        {
-            properties.push("subdivisionScheme")
-            new VariabilityAttr(crate, this, "subdivisionScheme", Variability.Uniform, this.subdivisionScheme)
-        }
-
-        if (this.nonOverlapping === true) {
-            properties.push("subsetFamily:materialBind:familyType")
-            new VariabilityAttr(crate, this, "subsetFamily:materialBind:familyType", Variability.Uniform, "nonOverlapping")
-        }
-
-        {
-            properties.push("userProperties:blender:data_name")
-            const attr = new Attribute(crate, this, "userProperties:blender:data_name", this.name)
-            attr.custom = true
-        }
-
-        // userProperties:blender:data_name
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setTokenVector("properties", properties)
-        )
-
-        crate.fieldsets.fieldset_indices.push(-1)
         for (const child of this.children) {
             child.encode()
         }

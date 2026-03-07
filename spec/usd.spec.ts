@@ -20,7 +20,8 @@ import { FieldSets } from "../src/crate/FieldSets.ts"
 import { Specs } from "../src/crate/Specs.ts"
 import { compressBound } from "../src/compression/lz4.ts"
 import { decodeIntegers, encodeIntegers } from "../src/compression/integers.ts"
-import { Attribute, DomeLight, GeomSubset, Material, Mesh, PseudoRoot2, PseudoRoot, Scope, Xform, Mesh2 } from "../src/geometry/index.ts"
+import { Attribute, DomeLight, GeomSubset, Material, Mesh, Scope, Xform } from "../src/geometry/index.ts"
+import { PseudoRoot } from "../src/geometry/PseudoRoot.ts"
 import { ValueRep } from "../src/crate/ValueRep.ts"
 import { IntArrayAttr, Relationship, VariabilityAttr } from "../src/attributes/index.ts"
 import { Variability } from "../src/crate/Variability.ts"
@@ -70,7 +71,9 @@ describe("USD", () => {
         describe("PseudoRoot", () => {
             it("plain", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
+                const pseudoRoot = new PseudoRoot(crate)
+                pseudoRoot.metersPerUnit = undefined
+                pseudoRoot.upAxis = undefined
                 const rootOut = wrangle(pseudoRoot).toJSON()
 
                 // console.log(JSON.stringify(rootOut, undefined, 4))
@@ -83,8 +86,9 @@ describe("USD", () => {
             })
             it(".metersPerUnit", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
+                const pseudoRoot = new PseudoRoot(crate)
                 pseudoRoot.metersPerUnit = 3
+                pseudoRoot.upAxis = undefined
 
                 const rootOut = wrangle(pseudoRoot).toJSON()
 
@@ -107,7 +111,9 @@ describe("USD", () => {
             })
             it(".documentation", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
+                const pseudoRoot = new PseudoRoot(crate)
+                pseudoRoot.metersPerUnit = undefined
+                pseudoRoot.upAxis = undefined
                 pseudoRoot.documentation = "foobar"
 
                 const rootOut = wrangle(pseudoRoot).toJSON()
@@ -131,8 +137,9 @@ describe("USD", () => {
             })
             it(".upAxis", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
+                const pseudoRoot = new PseudoRoot(crate)
                 pseudoRoot.upAxis = "Y"
+                pseudoRoot.metersPerUnit = undefined
 
                 const rootOut = wrangle(pseudoRoot).toJSON()
 
@@ -157,8 +164,11 @@ describe("USD", () => {
             // TODO: test "properties" and "primChildren" on UsdNode
             it("primChildren", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
-                const mesh = new Mesh2(pseudoRoot, "Cube")
+                const pseudoRoot = new PseudoRoot(crate)
+                pseudoRoot.metersPerUnit = undefined
+                pseudoRoot.upAxis = undefined
+                const mesh = new Xform(pseudoRoot, "Cube")
+
                 const rootOut = wrangle(pseudoRoot).toJSON()
 
                 // console.log(JSON.stringify(rootOut, undefined, 4))
@@ -196,7 +206,7 @@ describe("USD", () => {
                                     "inline": true,
                                     "array": false,
                                     "compressed": false,
-                                    "value": "Mesh"
+                                    "value": "Xform"
                                 }
                             }
                         }
@@ -207,8 +217,8 @@ describe("USD", () => {
         describe("Mesh", () => {
             it("plain", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
-                const mesh = new Mesh2(pseudoRoot, "Cube")
+                const pseudoRoot = new PseudoRoot(crate)
+                const mesh = new Mesh(pseudoRoot, "Cube")
 
                 const rootOut = wrangle(pseudoRoot, "/Cube").toJSON()
 
@@ -219,6 +229,15 @@ describe("USD", () => {
                     "name": "Cube",
                     "prim": true,
                     "fields": {
+                        "properties": {
+                            "type": "TokenVector",
+                            "inline": false,
+                            "array": false,
+                            "compressed": false,
+                            "value": [
+                                "userProperties:blender:data_name"
+                            ]
+                        },
                         "specifier": {
                             "type": "Specifier",
                             "inline": true,
@@ -232,14 +251,51 @@ describe("USD", () => {
                             "array": false,
                             "compressed": false,
                             "value": "Mesh"
+                        },
+                        "active": {
+                            "type": "Bool",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": true
                         }
-                    }
+                    },
+                    "children": [
+                        {
+                            "type": "Attribute",
+                            "name": "userProperties:blender:data_name",
+                            "prim": false,
+                            "fields": {
+                                "custom": {
+                                    "type": "Bool",
+                                    "inline": true,
+                                    "array": false,
+                                    "compressed": false,
+                                    "value": true
+                                },
+                                "typeName": {
+                                    "type": "Token",
+                                    "inline": true,
+                                    "array": false,
+                                    "compressed": false,
+                                    "value": "string"
+                                },
+                                "default": {
+                                    "type": "String",
+                                    "inline": true,
+                                    "array": false,
+                                    "compressed": false,
+                                    "value": "Cube"
+                                }
+                            }
+                        }
+                    ]
                 })
             })
             it(".points", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
-                const mesh = new Mesh2(pseudoRoot, "Cube")
+                const pseudoRoot = new PseudoRoot(crate)
+                const mesh = new Mesh(pseudoRoot, "Cube")
                 mesh.points = [6, 6, 6]
                 mesh.points = [0, 1, 2, 3, 4, 5]
 
@@ -271,8 +327,8 @@ describe("USD", () => {
             })
             it(".faceVertexCounts", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
-                const mesh = new Mesh2(pseudoRoot, "Cube")
+                const pseudoRoot = new PseudoRoot(crate)
+                const mesh = new Mesh(pseudoRoot, "Cube")
                 mesh.faceVertexCounts = [6, 6, 6]
                 mesh.faceVertexCounts = [4, 4, 4]
 
@@ -304,8 +360,8 @@ describe("USD", () => {
             })
             it(".faceVertexIndices", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
-                const mesh = new Mesh2(pseudoRoot, "Cube")
+                const pseudoRoot = new PseudoRoot(crate)
+                const mesh = new Mesh(pseudoRoot, "Cube")
                 mesh.faceVertexIndices = [6, 6, 6]
                 mesh.faceVertexIndices = [4, 4, 4]
 
@@ -337,8 +393,8 @@ describe("USD", () => {
             })
             it(".normals", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
-                const mesh = new Mesh2(pseudoRoot, "Cube")
+                const pseudoRoot = new PseudoRoot(crate)
+                const mesh = new Mesh(pseudoRoot, "Cube")
                 mesh.normals = [6, 6, 6]
                 mesh.normals = [4, 4, 4]
 
@@ -377,8 +433,8 @@ describe("USD", () => {
             })
             it(".texCoords", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
-                const mesh = new Mesh2(pseudoRoot, "Cube")
+                const pseudoRoot = new PseudoRoot(crate)
+                const mesh = new Mesh(pseudoRoot, "Cube")
                 mesh.texCoords = [6, 6,]
                 mesh.texCoords = [4, 4]
 
@@ -417,8 +473,8 @@ describe("USD", () => {
             })
             it(".extent", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
-                const mesh = new Mesh2(pseudoRoot, "Cube")
+                const pseudoRoot = new PseudoRoot(crate)
+                const mesh = new Mesh(pseudoRoot, "Cube")
                 mesh.extent = [0, 0, 0, 0, 0, 0]
                 mesh.extent = [1, 2, 3, 4, 5, 6]
 
@@ -450,8 +506,8 @@ describe("USD", () => {
             })
             it(".subdivisionScheme", () => {
                 const crate = makeCreate()
-                const pseudoRoot = new PseudoRoot2(crate)
-                const mesh = new Mesh2(pseudoRoot, "Cube")
+                const pseudoRoot = new PseudoRoot(crate)
+                const mesh = new Mesh(pseudoRoot, "Cube")
                 mesh.subdivisionScheme = "bilinear"
                 mesh.subdivisionScheme = "catmullClark"
 
@@ -608,8 +664,7 @@ describe("USD", () => {
             const buffer = readFileSync("spec/examples/cube-flat-faces.json")
             const orig = JSON.parse(buffer.toString())
 
-            const crate = new Crate()
-            crate.paths._nodes = []
+            const crate = makeCreate()
 
             // #usda 1.0
             // (
@@ -620,6 +675,7 @@ describe("USD", () => {
             // )
             const pseudoRoot = new PseudoRoot(crate)
             pseudoRoot.documentation = "Blender v5.0.1"
+            pseudoRoot.defaultPrim = "root"
 
             // def Xform "root" (
             //     customData = {
@@ -628,7 +684,7 @@ describe("USD", () => {
             //         }
             //     }
             // ) {
-            const root = new Xform(crate, pseudoRoot, "root")
+            const root = new Xform(pseudoRoot, "root")
             root.customData = {
                 Blender: {
                     generated: true
@@ -636,20 +692,20 @@ describe("USD", () => {
             }
 
             //     def Xform "Cube" {
-            const cube = new Xform(crate, root, "Cube")
+            const cube = new Xform(root, "Cube")
 
             //         custom string userProperties:blender:object_name = "Cube"
             const attr = new Attribute(crate, cube, "userProperties:blender:object_name", "Cube")
             attr.custom = true
 
             //         def Mesh "Mesh" ( active = true ) { ... }
-            const mesh = new Mesh(crate, cube, "Mesh")
-            mesh.points = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1]
+            const mesh = new Mesh(cube, "Mesh")
+            mesh.extent = [-1, -1, -1, 1, 1, 1]
             mesh.faceVertexCounts = [4, 4, 4, 4, 4, 4]
             mesh.faceVertexIndices = [0, 4, 6, 2, 3, 2, 6, 7, 7, 6, 4, 5, 5, 1, 3, 7, 1, 0, 2, 3, 5, 4, 0, 1]
             mesh.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]
+            mesh.points = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1]
             mesh.texCoords = [0.625, 0.5, 0.875, 0.5, 0.875, 0.75, 0.625, 0.75, 0.375, 0.75, 0.625, 0.75, 0.625, 1, 0.375, 1, 0.375, 0, 0.625, 0, 0.625, 0.25, 0.375, 0.25, 0.125, 0.5, 0.375, 0.5, 0.375, 0.75, 0.125, 0.75, 0.375, 0.5, 0.625, 0.5, 0.625, 0.75, 0.375, 0.75, 0.375, 0.25, 0.625, 0.25, 0.625, 0.5, 0.375, 0.5]
-            mesh.extent = [-1, -1, -1, 1, 1, 1]
             mesh.subdivisionScheme = "none"
 
             new DomeLight(crate, root, "env_light")
@@ -661,9 +717,9 @@ describe("USD", () => {
             const stage = new UsdStage(Buffer.from(crate.writer.buffer))
             const pseudoRootIn = stage.getPrimAtPath("/")!.toJSON()
 
-            // writeFileSync("constructed.usdc", Buffer.from(crate.writer.buffer))
-            // writeFileSync("original.json", JSON.stringify(orig, undefined, 4))
-            // writeFileSync("constructed.json", JSON.stringify(pseudoRootIn, undefined, 4))
+            writeFileSync("constructed.usdc", Buffer.from(crate.writer.buffer))
+            writeFileSync("original.json", JSON.stringify(orig, undefined, 4))
+            writeFileSync("constructed.json", JSON.stringify(pseudoRootIn, undefined, 4))
 
             compare(pseudoRootIn, orig)
         })
@@ -700,7 +756,7 @@ describe("USD", () => {
             //         }
             //     }
             // ) {
-            const root = new Xform(crate, pseudoRoot, "root")
+            const root = new Xform(pseudoRoot, "root")
             root.customData = {
                 Blender: {
                     generated: true
@@ -708,7 +764,7 @@ describe("USD", () => {
             }
 
             //     def Xform "Cube" {
-            const cube = new Xform(crate, root, "Cube")
+            const cube = new Xform(root, "Cube")
 
             const materials = new Scope(crate, root, "_materials")
             const red = new Material(crate, materials, "red")
@@ -721,7 +777,7 @@ describe("USD", () => {
             attr.custom = true
 
             //         def Mesh "Mesh" ( active = true ) { ... }
-            const mesh = new Mesh(crate, cube, "Cube")
+            const mesh = new Mesh(cube, "Cube")
             mesh.points = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1]
             mesh.faceVertexCounts = [4, 4, 4, 4, 4, 4]
             mesh.faceVertexIndices = [0, 4, 6, 2, 3, 2, 6, 7, 7, 6, 4, 5, 5, 1, 3, 7, 1, 0, 2, 3, 5, 4, 0, 1]

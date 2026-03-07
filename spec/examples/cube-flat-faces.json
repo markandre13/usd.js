@@ -3,6 +3,15 @@
     "name": "/",
     "prim": true,
     "fields": {
+        "primChildren": {
+            "type": "TokenVector",
+            "inline": false,
+            "array": false,
+            "compressed": false,
+            "value": [
+                "root"
+            ]
+        },
         "metersPerUnit": {
             "type": "Double",
             "inline": true,
@@ -24,15 +33,6 @@
             "compressed": false,
             "value": "Z"
         },
-        "primChildren": {
-            "type": "TokenVector",
-            "inline": false,
-            "array": false,
-            "compressed": false,
-            "value": [
-                "root"
-            ]
-        },
         "defaultPrim": {
             "type": "Token",
             "inline": true,
@@ -47,6 +47,16 @@
             "name": "root",
             "prim": true,
             "fields": {
+                "primChildren": {
+                    "type": "TokenVector",
+                    "inline": false,
+                    "array": false,
+                    "compressed": false,
+                    "value": [
+                        "Cube",
+                        "env_light"
+                    ]
+                },
                 "specifier": {
                     "type": "Specifier",
                     "inline": true,
@@ -71,16 +81,6 @@
                             "generated": true
                         }
                     }
-                },
-                "primChildren": {
-                    "type": "TokenVector",
-                    "inline": false,
-                    "array": false,
-                    "compressed": false,
-                    "value": [
-                        "Cube",
-                        "env_light"
-                    ]
                 }
             },
             "children": [
@@ -89,20 +89,6 @@
                     "name": "Cube",
                     "prim": true,
                     "fields": {
-                        "specifier": {
-                            "type": "Specifier",
-                            "inline": true,
-                            "array": false,
-                            "compressed": false,
-                            "value": "Def"
-                        },
-                        "typeName": {
-                            "type": "Token",
-                            "inline": true,
-                            "array": false,
-                            "compressed": false,
-                            "value": "Xform"
-                        },
                         "properties": {
                             "type": "TokenVector",
                             "inline": false,
@@ -120,6 +106,20 @@
                             "value": [
                                 "Mesh"
                             ]
+                        },
+                        "specifier": {
+                            "type": "Specifier",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "Def"
+                        },
+                        "typeName": {
+                            "type": "Token",
+                            "inline": true,
+                            "array": false,
+                            "compressed": false,
+                            "value": "Xform"
                         }
                     },
                     "children": [
@@ -156,6 +156,22 @@
                             "name": "Mesh",
                             "prim": true,
                             "fields": {
+                                "properties": {
+                                    "type": "TokenVector",
+                                    "inline": false,
+                                    "array": false,
+                                    "compressed": false,
+                                    "value": [
+                                        "userProperties:blender:data_name",
+                                        "extent",
+                                        "faceVertexCounts",
+                                        "faceVertexIndices",
+                                        "normals",
+                                        "points",
+                                        "primvars:st",
+                                        "subdivisionScheme"
+                                    ]
+                                },
                                 "specifier": {
                                     "type": "Specifier",
                                     "inline": true,
@@ -176,25 +192,37 @@
                                     "array": false,
                                     "compressed": false,
                                     "value": true
-                                },
-                                "properties": {
-                                    "type": "TokenVector",
-                                    "inline": false,
-                                    "array": false,
-                                    "compressed": false,
-                                    "value": [
-                                        "extent",
-                                        "faceVertexCounts",
-                                        "faceVertexIndices",
-                                        "normals",
-                                        "points",
-                                        "primvars:st",
-                                        "subdivisionScheme",
-                                        "userProperties:blender:data_name"
-                                    ]
                                 }
                             },
                             "children": [
+                                {
+                                    "type": "Attribute",
+                                    "name": "userProperties:blender:data_name",
+                                    "prim": false,
+                                    "fields": {
+                                        "custom": {
+                                            "type": "Bool",
+                                            "inline": true,
+                                            "array": false,
+                                            "compressed": false,
+                                            "value": true
+                                        },
+                                        "typeName": {
+                                            "type": "Token",
+                                            "inline": true,
+                                            "array": false,
+                                            "compressed": false,
+                                            "value": "string"
+                                        },
+                                        "default": {
+                                            "type": "String",
+                                            "inline": true,
+                                            "array": false,
+                                            "compressed": false,
+                                            "value": "Mesh"
+                                        }
+                                    }
+                                },
                                 {
                                     "type": "Attribute",
                                     "name": "extent",
@@ -546,34 +574,6 @@
                                             "array": false,
                                             "compressed": false,
                                             "value": "none"
-                                        }
-                                    }
-                                },
-                                {
-                                    "type": "Attribute",
-                                    "name": "userProperties:blender:data_name",
-                                    "prim": false,
-                                    "fields": {
-                                        "custom": {
-                                            "type": "Bool",
-                                            "inline": true,
-                                            "array": false,
-                                            "compressed": false,
-                                            "value": true
-                                        },
-                                        "typeName": {
-                                            "type": "Token",
-                                            "inline": true,
-                                            "array": false,
-                                            "compressed": false,
-                                            "value": "string"
-                                        },
-                                        "default": {
-                                            "type": "String",
-                                            "inline": true,
-                                            "array": false,
-                                            "compressed": false,
-                                            "value": "Mesh"
                                         }
                                     }
                                 }

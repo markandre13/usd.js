@@ -44,7 +44,21 @@ export class UsdNode {
     /**
      * encode node into the various sections of the crate
      */
-    encode() { }
+    encode() {
+        const crate = this.crate
+        this.index = crate.paths._nodes.length
+        crate.paths._nodes.push(this)
+
+        crate.specs.pathIndexes.push(this.index)
+        crate.specs.specTypeIndexes.push(this.spec_type!)
+        crate.specs.fieldsetIndexes.push(crate.fieldsets.fieldset_indices.length)
+        this.encodeFields()
+        crate.fieldsets.fieldset_indices.push(-1)
+
+        for (const child of this.children) {
+            child.encode()
+        }
+    }
     encodeFields() {
         this.setTokenVector("properties", this.children.filter(it => !isPrim(it.getType())).map(it => it.name))
         this.setTokenVector("primChildren", this.children.filter(it => isPrim(it.getType())).map(it => it.name))
@@ -204,6 +218,13 @@ export class UsdNode {
         }
     }
 
+    protected setBoolean(name: string, value?: boolean) {
+        if (value !== undefined) {
+            this.crate.fieldsets.fieldset_indices.push(
+                this.crate.fields.setBoolean(name, value)
+            )
+        }
+    }
     protected setDouble(name: string, value?: number) {
         if (value !== undefined) {
             this.crate.fieldsets.fieldset_indices.push(
@@ -236,6 +257,13 @@ export class UsdNode {
         if (value && value.length > 0) {
             this.crate.fieldsets.fieldset_indices.push(
                 this.crate.fields.setTokenVector(name, value)
+            )
+        }
+    }
+    protected setCustomData(name: string, value?: any) {
+        if (value !== undefined) {
+            this.crate.fieldsets.fieldset_indices.push(
+                this.crate.fields.setDictionary(name, value)
             )
         }
     }
