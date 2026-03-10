@@ -11,7 +11,7 @@ import { TableOfContents } from "../src/crate/TableOfContents.ts"
 import { Section } from "../src/crate/Section.ts"
 import { Tokens } from "../src/crate/Tokens.ts"
 import { SectionName } from "../src/crate/SectionName.ts"
-import { Fields } from "../src/crate/Fields.ts"
+import { Fields, type ListOp } from "../src/crate/Fields.ts"
 import { Crate } from "../src/crate/Crate.ts"
 import { Paths } from "../src/crate/Paths.ts"
 import { UsdNode } from "../src/crate/UsdNode.ts"
@@ -849,6 +849,13 @@ describe("USD", () => {
                 const material = new Material(materials, name)
                 // outputs:surface                 : ConnectionPaths(...)
                 // userProperties:blender:data_name
+                const data: {
+                    surface?: ListOp<UsdNode>
+                } = { }
+                new AttributeX(material, "outputs:surface", (node) => {
+                    node.setToken("typeName", "token")
+                    node.setPathListOp("connectionPaths", data.surface)
+                })
                 material.blenderDataName = name
                 const shader = new Shader(material, "Principled_BSDF")
                 new AttributeX(shader, "info:id", (node) => {
@@ -868,8 +875,6 @@ describe("USD", () => {
                     node.setToken("typeName", "color3f")
                     node.setVec3f("default", diffuseColor)
                 })
-                // FIXME: AFTER THIS ONE FIELDS ARE NOT ENCODED AT ALL
-                // CHECK ENCODING, WRITE AND READ
                 new AttributeX(shader, "inputs:ior", (node) => {
                     node.setToken("typeName", "float")
                     node.setFloat("default", 1.5)
@@ -890,10 +895,13 @@ describe("USD", () => {
                     node.setToken("typeName", "float")
                     node.setFloat("default", 0.5)
                 })
-                new AttributeX(shader, "outputs:surface", (node) => {
+                const surface = new AttributeX(shader, "outputs:surface", (node) => {
                     node.setToken("typeName", "token")
                     // FIXME: is that it? or did decoding fail????
                 })
+                data.surface = {
+                    explicit: [surface]
+                }
                 return material
             }
             const blue = makePrincipled_BSDF("blue", [0, 0, 1])

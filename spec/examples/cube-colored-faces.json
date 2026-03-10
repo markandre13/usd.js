@@ -1429,15 +1429,15 @@
                                             "compressed": false,
                                             "value": [
                                                 "info:id",
-                                                "outputs:surface",
-                                                "inputs:diffuseColor",
-                                                "inputs:metallic",
-                                                "inputs:roughness",
-                                                "inputs:ior",
-                                                "inputs:opacity",
-                                                "inputs:specular",
                                                 "inputs:clearcoat",
-                                                "inputs:clearcoatRoughness"
+                                                "inputs:clearcoatRoughness",
+                                                "inputs:diffuseColor",
+                                                "inputs:ior",
+                                                "inputs:metallic",
+                                                "inputs:opacity",
+                                                "inputs:roughness",
+                                                "inputs:specular",
+                                                "outputs:surface"
                                             ]
                                         },
                                         "specifier": {
@@ -1779,15 +1779,15 @@
                                             "compressed": false,
                                             "value": [
                                                 "info:id",
-                                                "outputs:surface",
-                                                "inputs:diffuseColor",
-                                                "inputs:metallic",
-                                                "inputs:roughness",
-                                                "inputs:ior",
-                                                "inputs:opacity",
-                                                "inputs:specular",
                                                 "inputs:clearcoat",
-                                                "inputs:clearcoatRoughness"
+                                                "inputs:clearcoatRoughness",
+                                                "inputs:diffuseColor",
+                                                "inputs:ior",
+                                                "inputs:metallic",
+                                                "inputs:opacity",
+                                                "inputs:roughness",
+                                                "inputs:specular",
+                                                "outputs:surface"
                                             ]
                                         },
                                         "specifier": {
@@ -2129,15 +2129,15 @@
                                             "compressed": false,
                                             "value": [
                                                 "info:id",
-                                                "outputs:surface",
-                                                "inputs:diffuseColor",
-                                                "inputs:metallic",
-                                                "inputs:roughness",
-                                                "inputs:ior",
-                                                "inputs:opacity",
-                                                "inputs:specular",
                                                 "inputs:clearcoat",
-                                                "inputs:clearcoatRoughness"
+                                                "inputs:clearcoatRoughness",
+                                                "inputs:diffuseColor",
+                                                "inputs:ior",
+                                                "inputs:metallic",
+                                                "inputs:opacity",
+                                                "inputs:roughness",
+                                                "inputs:specular",
+                                                "outputs:surface"
                                             ]
                                         },
                                         "specifier": {
@@ -2479,15 +2479,15 @@
                                             "compressed": false,
                                             "value": [
                                                 "info:id",
-                                                "outputs:surface",
-                                                "inputs:diffuseColor",
-                                                "inputs:metallic",
-                                                "inputs:roughness",
-                                                "inputs:ior",
-                                                "inputs:opacity",
-                                                "inputs:specular",
                                                 "inputs:clearcoat",
-                                                "inputs:clearcoatRoughness"
+                                                "inputs:clearcoatRoughness",
+                                                "inputs:diffuseColor",
+                                                "inputs:ior",
+                                                "inputs:metallic",
+                                                "inputs:opacity",
+                                                "inputs:roughness",
+                                                "inputs:specular",
+                                                "outputs:surface"
                                             ]
                                         },
                                         "specifier": {

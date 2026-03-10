@@ -75,7 +75,7 @@ export class UsdNode {
     }
     numberOfNodes(): number {
         let n = 1
-        for(const child of this.children) {
+        for (const child of this.children) {
             n += child.numberOfNodes()
         }
         return n
@@ -289,6 +289,13 @@ export class UsdNode {
         if (value && value.length > 0) {
             this.crate.fieldsets.fieldset_indices.push(
                 this.crate.fields.setTokenVector(name, value)
+            )
+        }
+    }
+    setPathListOp(name: string, value?: ListOp<UsdNode>) {
+        if (value) {
+            this.crate.fieldsets.fieldset_indices.push(
+                this.crate.fields.setPathListOp(name, value)
             )
         }
     }
