@@ -6,7 +6,7 @@ import { Reader } from "./Reader.js"
 import type { Specifier } from "./Specifier.ts"
 import type { Strings } from "./Strings.ts"
 import type { Tokens } from "./Tokens.ts"
-import { ValueRep } from "./ValueRep.ts"
+import { kMinCompressedArraySize, ValueRep } from "./ValueRep.ts"
 import type { Variability } from "./Variability.ts"
 import { Writer } from "./Writer.js"
 import { UsdNode } from "./UsdNode.js"
@@ -293,7 +293,7 @@ export class Fields {
         this.valueReps.writeUint32(this.data.tell())
         this.valueReps.skip(2)
         this.valueReps.writeUint8(CrateDataType.Int)
-        if (value.length < 4) { // TODO: needed?
+        if (value.length < kMinCompressedArraySize) {
             this.valueReps.writeUint8(IsArrayBit_)
             this.data.writeUint64(value.length)
             for (let i = 0; i < value.length; ++i) {

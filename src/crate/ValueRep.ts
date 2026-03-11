@@ -16,6 +16,8 @@ import { Variability } from "./Variability.js"
 import { decompressFromBuffer } from "../index.ts"
 import type { ListOp } from "./Fields.ts"
 
+export const kMinCompressedArraySize = 16
+
 // value's location.
 // FIXME: last two bytes are type info
 export class ValueRep {
@@ -90,25 +92,24 @@ export class ValueRep {
                 }
                 break
             case CrateDataType.Int:
-                if (this.isArray() && !this.isInlined() && !this.isCompressed()) {
+                if (this.isArray() && !this.isInlined()) {
                     crate.reader.offset = this.getIndex()
                     const n = crate.reader.getUint64()
-                    const arr = new Array<number>(n)
-                    for (let i = 0; i < n; ++i) {
-                        arr[i] = crate.reader.getInt32()
+                    if (!this.isCompressed() || n < kMinCompressedArraySize) {
+                        const arr = new Array<number>(n)
+                        for (let i = 0; i < n; ++i) {
+                            arr[i] = crate.reader.getInt32()
+                        }
+                        return arr
+                    } else {
+                        const compSize = crate.reader.getUint64()
+                        const comp_buffer = new Uint8Array(crate.reader._dataview.buffer, crate.reader.offset, compSize)
+                        const workingSpaceSize = 4 + Math.floor((n * 2 + 7) / 8) + n * 4
+                        const workingSpace = new Uint8Array(workingSpaceSize)
+                        const decompSz = decompressFromBuffer(comp_buffer, workingSpace)
+                        const arr = decodeIntegers(new DataView(workingSpace.buffer), n)
+                        return arr
                     }
-                    return arr
-                }
-                if (this.isArray() && !this.isInlined() && this.isCompressed()) {
-                    crate.reader.offset = this.getIndex()
-                    const n = crate.reader.getUint64()
-                    const compSize = crate.reader.getUint64()
-                    const comp_buffer = new Uint8Array(crate.reader._dataview.buffer, crate.reader.offset, compSize)
-                    const workingSpaceSize = 4 + Math.floor((n * 2 + 7) / 8) + n * 4
-                    const workingSpace = new Uint8Array(workingSpaceSize)
-                    const decompSz = decompressFromBuffer(comp_buffer, workingSpace)
-                    const arr = decodeIntegers(new DataView(workingSpace.buffer), n)
-                    return arr
                 }
                 break
             case CrateDataType.Vec2f:
