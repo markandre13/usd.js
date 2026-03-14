@@ -267,7 +267,7 @@
                                             "type": "Int",
                                             "inline": false,
                                             "array": true,
-                                            "compressed": true,
+                                            "compressed": false,
                                             "value": [
                                                 4,
                                                 4,

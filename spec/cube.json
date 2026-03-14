@@ -357,6 +357,7 @@
                                             "array": false,
                                             "compressed": false,
                                             "value": {
+                                                "isExplicit": true,
                                                 "explicit": [
                                                     "/root/_materials/Material"
                                                 ]
@@ -736,6 +737,7 @@
                                             "array": false,
                                             "compressed": false,
                                             "value": {
+                                                "isExplicit": true,
                                                 "explicit": [
                                                     "/root/_materials/Material/Principled_BSDF/outputs:surface"
                                                 ]

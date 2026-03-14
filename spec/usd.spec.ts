@@ -23,7 +23,7 @@ import { decodeIntegers, encodeIntegers } from "../src/compression/integers.ts"
 import { Attribute, AttributeX, DomeLight, GeomSubset, Material, Mesh, Scope, Shader, Xform } from "../src/geometry/index.ts"
 import { PseudoRoot } from "../src/geometry/PseudoRoot.ts"
 import { ValueRep } from "../src/crate/ValueRep.ts"
-import { FloatAttr, IntArrayAttr, Relationship, VariabilityAttr } from "../src/attributes/index.ts"
+import { IntArrayAttr, Relationship, VariabilityAttr } from "../src/attributes/index.ts"
 import { Variability } from "../src/crate/Variability.ts"
 
 // UsdObject < UsdProperty < UsdAttribute
@@ -647,98 +647,23 @@ describe("USD", () => {
         // console.log(JSON.stringify(pseudoRoot, undefined))
 
         const json = JSON.parse(readFileSync("spec/cube.json").toString())
-        // writeFileSync("spec/cube.json.tmp", JSON.stringify(pseudoRoot.toJSON(), undefined, 4))
+        writeFileSync("spec/cube.json.tmp", JSON.stringify(pseudoRoot.toJSON(), undefined, 4))
         // console.log(JSON.stringify(pseudoRoot.toJSON()))
         expect(pseudoRoot.toJSON()).to.deep.equal(json)
-        // return
 
-        // console.log(stage._crate._nodes[0].getFields().get("documentation")?.getValue(stage._crate))
-        // console.log(stage._crate!fields[0].toString())
-        // console.log(stage._crate.tokens[stage._crate.fields[0].tokenIndex])
-        // console.log(stage._crate.fields[0].valueRep.getValue(stage._crate))
-
-        /*
-            openusd: /pxr/usd/bin/usdcat/usdcat.cpp
-            // stage = UsdStage::Open(input);
-            // layer = SdfLayer::FindOrOpen(input);
-     
-            stage is the top. might be one file, or that one file might included other files
-     
-            stage (file)
-              layer (file)
-                prims
-     
-            stage presents the scenegraph, which is a tree of prims
-            stage
-              root
-                usd files
-                  prims
-     
-            there's the python api!
-     
-            from pxr import Usd
-            stage = Usd.Stage.CreateNew('HelloWorldRedux.usda')
-            xform = stage.DefinePrim('/hello', 'Xform')
-            sphere = stage.DefinePrim('/hello/world', 'Sphere')
-            stage.GetRootLayer().Save()
-     
-            #usda 1.0
-     
-            def Xform "hello"
-            {
-                def Sphere "world"
-                {
-                }
-            }
-     
-            from pxr import Usd, Vt
-            stage = Usd.Stage.Open('HelloWorld.usda')
-            xform = stage.GetPrimAtPath('/hello')
-            sphere = stage.GetPrimAtPath('/hello/world')
-            
-            xform.GetPropertyNames()
-     
-            >>> extentAttr = sphere.GetAttribute('extent')
-            >>> extentAttr.Get()
-            Vt.Vec3fArray(2, (Gf.Vec3f(-1.0, -1.0, -1.0), Gf.Vec3f(1.0, 1.0, 1.0)))
-     
-            >>> radiusAttr = sphere.GetAttribute('radius')
-            >>> radiusAttr.Set(2)
-            True
-            >>> extentAttr.Set(extentAttr.Get() * 2)
-     
-            usd-core
-     
-            # Create a new, empty USD stage where 3D scenes are assembled
-            Usd.Stage.CreateNew()
-            
-            # Open an existing USD file as a stage
-            Usd.Stage.Open()
-            
-            # Saves all layers in a USD stage
-            Usd.Stage.Save()
-     
-            https://docs.nvidia.com/learn-openusd/latest/stage-setting/usd-modules.html
-     
-            * The USD code repository is made up of four core packages: base, usd, imaging, and usdImaging.
-            * to read/write usd data, the packages base and usd are needed
-            * When authoring or querying USD data, you will almost always use a few common USD modules such as Usd, Sdf, and Gf along with some schema modules.
-            * Schemas are grouped into schema domains and each domain has its own module. The schema modules you use will depend on the type of scene description you’re working with. For example, UsdGeom for geometry data, UsdShade for materials and shaders, and UsdPhysics for physics scene description.
-         */
-
-        // ( ... ) : field set
     })
     describe("re-create blender 5.0 files", () => {
         it("cube-flat-faces.usdc", () => {
+            const prefix = "spec/examples/cube-flat-faces"
             // read the original
-            // const buffer = readFileSync("spec/examples/cube-flat-faces.usdc")
+            // const buffer = readFileSync("`${prefix}.usdc`")
             // const stageIn = new UsdStage(buffer)
             // const origPseudoRoot = stageIn.getPrimAtPath("/")!
             // const orig = origPseudoRoot.toJSON()
             // console.log(JSON.stringify(orig, undefined, 4))
 
             // read an adjusted, good enough variant of the original's JSON
-            const buffer = readFileSync("spec/examples/cube-flat-faces.json")
+            const buffer = readFileSync(`${prefix}.json`)
             const orig = JSON.parse(buffer.toString())
 
             const crate = makeCreate()
@@ -795,30 +720,24 @@ describe("USD", () => {
             const stage = new UsdStage(Buffer.from(crate.writer.buffer))
             const pseudoRootIn = stage.getPrimAtPath("/")!.toJSON()
 
-            writeFileSync("constructed.usdc", Buffer.from(crate.writer.buffer))
-            writeFileSync("original.json", JSON.stringify(orig, undefined, 4))
-            writeFileSync("constructed.json", JSON.stringify(pseudoRootIn, undefined, 4))
+            // writeFileSync("constructed.usdc", Buffer.from(crate.writer.buffer))
+            // writeFileSync("original.json", JSON.stringify(orig, undefined, 4))
+            // writeFileSync("constructed.json", JSON.stringify(pseudoRootIn, undefined, 4))
 
             compare(pseudoRootIn, orig)
         })
-        xit("cube-smooth-faces.usdc") // only normals differ from cube-flat-faces.usdc
-        // FIXME: comparing the USDC as USDA created by ./tusdcat reveals a difference:
-        //        ./tusdcat  /Users/mark/js/usd/spec/examples/cube-flat-colored-faces.usdc > orig.usda
-        //        ./tusdcat  /Users/mark/js/usd/constructed.usdc  > constructed.usda
-        //        diff -u orig.usda constructed.usda 
-        //        - int[] faceVertexCounts = [4, 4, 4, 4, 4, 4]
-        //        + int[] faceVertexCounts = [9, 0, 28672, 65536, 6148, 0]
-        it.only("cube-flat-colored-faces.usdc", () => {
+        it("cube-colored-faces.usdc", () => {
+            const prefix = "spec/examples/cube-colored-faces"
             // read the original
-            // const buffer = readFileSync("spec/examples/cube-flat-colored-faces.usdc")
+            // const buffer = readFileSync(`${prefix}.usdc`)
             // const stageIn = new UsdStage(buffer)
             // const origPseudoRoot = stageIn.getPrimAtPath("/")!
             // const orig = origPseudoRoot.toJSON()
             // console.log(JSON.stringify(orig, undefined, 4))
-            // // writeFileSync("spec/examples/cube-colored-faces.json", JSON.stringify(orig, undefined, 4))
+            // // writeFileSync(`${prefix}.json`, JSON.stringify(orig, undefined, 4))
 
             // read an adjusted, good enough variant of the original's JSON
-            const buffer = readFileSync("spec/examples/cube-colored-faces.json")
+            const buffer = readFileSync(`${prefix}.json`)
             const orig = JSON.parse(buffer.toString())
 
             const crate = makeCreate()
@@ -980,7 +899,7 @@ describe("USD", () => {
             crate.serialize(pseudoRoot)
             // crate.print()
 
-            console.log("----------------")
+            // console.log("----------------")
 
             // deserialize 
             const stage = new UsdStage(Buffer.from(crate.writer.buffer))
@@ -989,13 +908,12 @@ describe("USD", () => {
 
             const pseudoRootIn = stage.getPrimAtPath("/")!.toJSON()
 
-            writeFileSync("constructed.usdc", Buffer.from(crate.writer.buffer))
-            writeFileSync("original.json", JSON.stringify(orig, undefined, 4))
-            writeFileSync("constructed.json", JSON.stringify(pseudoRootIn, undefined, 4))
+            // writeFileSync("constructed.usdc", Buffer.from(crate.writer.buffer))
+            // writeFileSync("original.json", JSON.stringify(orig, undefined, 4))
+            // writeFileSync("constructed.json", JSON.stringify(pseudoRootIn, undefined, 4))
 
             compare(pseudoRootIn, orig)
         })
-        it("cube-smooth-sharp-faces.usdc")
         it("armature.usdc")
     })
     describe("encode/decode values", () => {
@@ -1106,36 +1024,6 @@ describe("USD", () => {
             //                  ^ key?      ^ dOffset? (should be 30???)
             // 0030 01 00 00 00 00 00 01 40                         .......@
             //      ^ true            ^ Bool
-
-            const value = new ValueRep(crate.fields.valueReps.view, idx)
-            expect(value.getType()).to.equal(CrateDataType.Dictionary)
-            expect(value.getValue(crate)).to.deep.equal(customData)
-        })
-        xit("WIP", () => {
-            const customData = {
-                generated: true
-            }
-            const crate = new Crate()
-            crate.reader = new Reader(crate.writer.view)
-
-            const idx = crate.fields._setDictionary(customData)
-
-            // console.log(`# valuereps`)
-            // hexdump(new Uint8Array(crate.fields.valueReps.buffer,  0, crate.fields.valueReps.buffer.byteLength))
-            // console.log(`# data`)
-            // hexdump(new Uint8Array(crate.writer.buffer,  0, crate.writer.buffer.byteLength))
-
-            // # valuereps
-            // 0000 00 00 00 00 00 00 1f 00                         ........
-            //      ^                 ^
-            //      index 0           CrateDataType.Dictionary
-            // # data
-            // 0000 01 00 00 00 00 00 00 00 00 00 00 00 08 00 00 00 ................
-            //      ^                       ^           ^
-            //      dict size               key         dOffset 
-            // 0010 00 00 00 00 01 00 00 00 00 00 01 40             ...........@
-            //                  ^                 ^
-            //                  true              bool
 
             const value = new ValueRep(crate.fields.valueReps.view, idx)
             expect(value.getType()).to.equal(CrateDataType.Dictionary)
