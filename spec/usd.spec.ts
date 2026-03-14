@@ -978,19 +978,29 @@ describe("USD", () => {
                 node.setVariability("variability", Variability.Uniform)
                 node.setTokenArray("default", ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"])
             })
+
             const skeleton = new Skeleton(skelRoot, "Armature")
             new AttributeX(skeleton, "bindTransforms", (node) => {
-                node.setToken("typeName", "matrix4d")
+                node.setToken("typeName", "matrix4d[]")
                 node.setVariability("variability", Variability.Uniform)
-                // node.setMatrix4d("default", [])
+                // node.setMatrix4dArray("default", [])
             })
-            new AttributeX(skeleton, "joints", (node) => {})
-            new AttributeX(skeleton, "primvars:blender:bone_lengths", (node) => {})
-            new AttributeX(skeleton, "restTransforms", (node) => {})
-            // bindTransforms
-            // joints
-            // primvars:blender:bone_lengths
-            // restTransforms
+            new AttributeX(skeleton, "joints", (node) => {
+                node.setToken("typeName", "token[]")
+                node.setVariability("variability", Variability.Uniform)
+                node.setTokenArray("default", ["Bone", "Bone/Bone_001"])
+                
+            })
+            new AttributeX(skeleton, "primvars:blender:bone_lengths", (node) => {
+                node.setToken("typeName", "float[]")
+                node.setVariability("variability", Variability.Uniform)
+                // node.setFloatArray("default", [1, 1])
+            })
+            new AttributeX(skeleton, "restTransforms", (node) => {
+                node.setToken("typeName", "matrix4d[]")
+                node.setVariability("variability", Variability.Uniform)
+                // node.setMatrix4dArray("default", [])
+            })
 
             const materials = new Scope(root, "_materials")
 
@@ -1057,7 +1067,7 @@ describe("USD", () => {
             const gray = makePrincipled_BSDF("Material", [0.8, 0.8, 0.8])
 
             //         def Mesh "Mesh" ( active = true ) { ... }
-            const mesh = new Mesh(skelRoot, "Armature")
+            const mesh = new Mesh(skelRoot, "Cube")
 
             // mesh.doubleSided = true
             // mesh.extent = [-1, -1, -1, 1, 1, 1]
