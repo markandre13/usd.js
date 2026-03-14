@@ -66,6 +66,13 @@ function wrangle(root: UsdNode, path: string = "/") {
 }
 
 describe("USD", () => {
+    xit("READ", () => {
+        const buffer = readFileSync("spec/examples/armature.usdc")
+        const stage = new UsdStage(buffer)
+        const origPseudoRoot = stage.getPrimAtPath("/")!
+        const orig = origPseudoRoot.toJSON()
+        console.log(JSON.stringify(orig, undefined, 4))
+    })
     describe("nodes", () => {
         describe("PseudoRoot", () => {
             it("plain", () => {
@@ -922,7 +929,7 @@ describe("USD", () => {
 
             compare(pseudoRootIn, orig)
         })
-        it.only("armature.usdc", () => {
+        xit("armature.usdc", () => {
             const prefix = "spec/examples/armature"
             // read the original
             const buffer = readFileSync(`${prefix}.usdc`)
@@ -1150,23 +1157,6 @@ describe("USD", () => {
 
             const idx = crate.fields._setDictionary(customData)
 
-            // console.log(`# valuereps`)
-            // hexdump(new Uint8Array(crate.fields.valueReps.buffer,  0, crate.fields.valueReps.buffer.byteLength))
-            // console.log(`# data`)
-            // hexdump(new Uint8Array(crate.writer.buffer,  0, crate.writer.buffer.byteLength))
-
-            // # valuereps
-            // 0000 00 00 00 00 00 00 1f 00                         ........
-            //      ^                 ^
-            //      index 0           CrateDataType.Dictionary
-            // # data
-            // 0000 01 00 00 00 00 00 00 00 00 00 00 00 08 00 00 00 ................
-            //      ^                       ^           ^
-            //      dict size               key         dOffset 
-            // 0010 00 00 00 00 01 00 00 00 00 00 01 40             ...........@
-            //                  ^                 ^
-            //                  true              bool
-
             const value = new ValueRep(crate.fields.valueReps.view, idx)
             expect(value.getType()).to.equal(CrateDataType.Dictionary)
             expect(value.getValue(crate)).to.deep.equal(customData)
@@ -1182,36 +1172,13 @@ describe("USD", () => {
 
             const idx = crate.fields._setDictionary(customData)
 
-            // places the initial entry into crate.fields.valueReps, the rest into crate.writer
-
-            // expect(crate.fields.data).to.eql(crate.writer)
-            // expect(crate.fields.valueReps)
-
-            // console.log(`# valuereps`)
-            // hexdump(new Uint8Array(crate.fields.valueReps.buffer,  0, crate.fields.valueReps.buffer.byteLength))
-            // console.log(`# data`)
-            // hexdump(new Uint8Array(crate.writer.buffer,  0, crate.writer.buffer.byteLength))
-
-            // # valuereps
-            // 0000 00 00 00 00 00 00 1f 00                         ........
-            //      ^                 ^
-            //      index 0           CrateDataType.Dictionary
-            // # data
-            // 0000 01 00 00 00 00 00 00 00 01 00 00 00 08 00 00 00 ................
-            //      ^                       ^           ^
-            //      dict size               key         dOffset 
-            // 0010 00 00 00 00 1c 00 00 00 00 00 1f 00 01 00 00 00 ................
-            //                  ^                 ^     ^  
-            //                  index             Dict  dict size
-            // 0020 00 00 00 00 00 00 00 00 24 00 00 00 00 00 00 00 ........$.......
-            //                  ^ key?      ^ dOffset? (should be 30???)
-            // 0030 01 00 00 00 00 00 01 40                         .......@
-            //      ^ true            ^ Bool
-
             const value = new ValueRep(crate.fields.valueReps.view, idx)
             expect(value.getType()).to.equal(CrateDataType.Dictionary)
             expect(value.getValue(crate)).to.deep.equal(customData)
         })
+        it.only("Int")
+        it.only("Vec3d")
+        it.only("Matrix[234]d[\[\]])")
     })
     describe("Crate parts", () => {
         it("BootStrap", () => {

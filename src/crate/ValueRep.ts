@@ -61,6 +61,19 @@ export class ValueRep {
                 if (this.isInlined() && !this.isArray() && !this.isCompressed()) {
                     return this.getFloat()
                 }
+                if (!this.isInlined() && !this.isArray() && !this.isCompressed()) {
+                    crate.reader.offset = this.getIndex()
+                    return crate.reader.getFloat32()
+                }
+                if (!this.isInlined() && this.isArray() && !this.isCompressed()) {
+                    crate.reader.offset = this.getIndex()
+                    const n = crate.reader.getUint64()
+                    const arr = new Array<string>(n)
+                    for (let i = 0; i < n; ++i) {
+                        arr[i] = crate.tokens.get(crate.reader.getFloat32())
+                    }
+                    return arr
+                }
                 break
             case CrateDataType.Double:
                 if (this.isInlined() && !this.isArray() && !this.isCompressed()) {
@@ -110,6 +123,9 @@ export class ValueRep {
                         const arr = decodeIntegers(new DataView(workingSpace.buffer), n)
                         return arr
                     }
+                }
+                if (!this.isArray() && this.isInlined() && !this.isCompressed()) {
+                    return this._buffer.getInt32(this._offset, true)
                 }
                 break
             case CrateDataType.Vec2f:
@@ -184,6 +200,39 @@ export class ValueRep {
                     return this.getVec3f()
                 }
             } break
+            case CrateDataType.Matrix2d:
+            case CrateDataType.Matrix3d:
+            case CrateDataType.Matrix4d:
+                let n: number
+                switch (this.getType()) {
+                    case CrateDataType.Matrix2d:
+                        n = 2 * 2
+                        break
+                    case CrateDataType.Matrix3d:
+                        n = 3 * 3
+                        break
+                    case CrateDataType.Matrix4d:
+                        n = 4 * 4
+                        break
+                }
+                if (!this.isInlined() && !this.isArray() && !this.isCompressed()) {
+                    crate.reader.offset = this.getIndex()
+                    const arr = new Array<number>(n!)
+                    for (let i = 0; i < n!; ++i) {
+                        arr[i] = crate.reader.getFloat64()
+                    }
+                    return arr
+                }
+                if (!this.isInlined() && this.isArray() && !this.isCompressed()) {
+                    crate.reader.offset = this.getIndex()
+                    n = n! * reader.getUint64()
+                    const arr = new Array<number>(n!)
+                    for (let i = 0; i < n!; ++i) {
+                        arr[i] = crate.reader.getFloat64()
+                    }
+                    return arr
+                }
+                break
 
             case CrateDataType.TokenVector:
                 if (!this.isInlined() && !this.isArray() && !this.isCompressed()) {
@@ -336,7 +385,7 @@ export class ValueRep {
     }
     // TODO: signed or unsigned?
     getVec3f() {
-        return [this._buffer.getUint8(this._offset), this._buffer.getUint8(this._offset + 1), this._buffer.getUint8(this._offset + 2)]
+        return [this._buffer.getInt8(this._offset), this._buffer.getInt8(this._offset + 1), this._buffer.getInt8(this._offset + 2)]
     }
     getIndex(): number {
         if (this._buffer.getUint8(this._offset + 4) || this._buffer.getUint8(this._offset + 5)) {
