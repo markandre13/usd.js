@@ -20,12 +20,12 @@ import { FieldSets } from "../src/crate/FieldSets.ts"
 import { Specs } from "../src/crate/Specs.ts"
 import { compressBound } from "../src/compression/lz4.ts"
 import { decodeIntegers, encodeIntegers } from "../src/compression/integers.ts"
-import { Attribute, AttributeX, DomeLight, GeomSubset, Material, Mesh, Scope, Shader, SkelRoot, Xform } from "../src/geometry/index.ts"
+import { Attribute, AttributeX, DomeLight, GeomSubset, Material, Mesh, Scope, Shader, Skeleton, SkelRoot, Xform } from "../src/geometry/index.ts"
 import { PseudoRoot } from "../src/geometry/PseudoRoot.ts"
 import { ValueRep } from "../src/crate/ValueRep.ts"
 import { IntArrayAttr, Relationship, VariabilityAttr } from "../src/attributes/index.ts"
 import { Variability } from "../src/crate/Variability.ts"
-
+import { stringify } from "./stringify.ts"
 // UsdObject < UsdProperty < UsdAttribute
 //           < UsdPrim
 
@@ -66,12 +66,13 @@ function wrangle(root: UsdNode, path: string = "/") {
 }
 
 describe("USD", () => {
-    xit("READ", () => {
+    it("READ", () => {
         const buffer = readFileSync("spec/examples/armature.usdc")
         const stage = new UsdStage(buffer)
         const origPseudoRoot = stage.getPrimAtPath("/")!
         const orig = origPseudoRoot.toJSON()
-        console.log(JSON.stringify(orig, undefined, 4))
+        // console.log(JSON.stringify(orig, undefined, 4))
+        console.log(stringify(orig, {indent: 4}))
     })
     describe("nodes", () => {
         describe("PseudoRoot", () => {
@@ -929,19 +930,19 @@ describe("USD", () => {
 
             compare(pseudoRootIn, orig)
         })
-        xit("armature.usdc", () => {
+        it.only("armature.usdc", () => {
             const prefix = "spec/examples/armature"
             // read the original
-            const buffer = readFileSync(`${prefix}.usdc`)
-            const stageIn = new UsdStage(buffer)
-            const origPseudoRoot = stageIn.getPrimAtPath("/")!
-            const orig = origPseudoRoot.toJSON()
-            // console.log(JSON.stringify(orig, undefined, 4))
-            // writeFileSync(`${prefix}.json`, JSON.stringify(orig, undefined, 4))
+            // const buffer = readFileSync(`${prefix}.usdc`)
+            // const stageIn = new UsdStage(buffer)
+            // const origPseudoRoot = stageIn.getPrimAtPath("/")!
+            // const orig = origPseudoRoot.toJSON()
+            // // console.log(JSON.stringify(orig, undefined, 4))
+            // writeFileSync(`${prefix}.json`, stringify(orig, {indent: 4}))
 
             // read an adjusted, good enough variant of the original's JSON
-            // const buffer = readFileSync(`${prefix}.json`)
-            // const orig = JSON.parse(buffer.toString())
+            const buffer = readFileSync(`${prefix}.json`)
+            const orig = JSON.parse(buffer.toString())
 
             const crate = makeCreate()
 
@@ -977,7 +978,15 @@ describe("USD", () => {
                 node.setVariability("variability", Variability.Uniform)
                 node.setTokenArray("default", ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"])
             })
-            // const skeleton = new Skeleton(skelRoot, "Armature")
+            const skeleton = new Skeleton(skelRoot, "Armature")
+            new AttributeX(skeleton, "bindTransforms", (node) => {
+                node.setToken("typeName", "matrix4d")
+                node.setVariability("variability", Variability.Uniform)
+                // node.setMatrix4d("default", [])
+            })
+            new AttributeX(skeleton, "joints", (node) => {})
+            new AttributeX(skeleton, "primvars:blender:bone_lengths", (node) => {})
+            new AttributeX(skeleton, "restTransforms", (node) => {})
             // bindTransforms
             // joints
             // primvars:blender:bone_lengths
@@ -1047,25 +1056,23 @@ describe("USD", () => {
             }
             const gray = makePrincipled_BSDF("Material", [0.8, 0.8, 0.8])
 
-
-
             //         def Mesh "Mesh" ( active = true ) { ... }
             const mesh = new Mesh(skelRoot, "Armature")
 
-            mesh.doubleSided = true
-            mesh.extent = [-1, -1, -1, 1, 1, 1]
-            mesh.faceVertexCounts = [4, 4, 4, 4, 4, 4]
-            mesh.faceVertexIndices = [0, 4, 6, 2, 3, 2, 6, 7, 7, 6, 4, 5, 5, 1, 3, 7, 1, 0, 2, 3, 5, 4, 0, 1]
-            mesh.materialBinding = {
-                isExplicit: true,
-                explicit: [gray]
-            }
-            mesh.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]
-            mesh.points = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1]
-            mesh.texCoords = [0.625, 0.5, 0.875, 0.5, 0.875, 0.75, 0.625, 0.75, 0.375, 0.75, 0.625, 0.75, 0.625, 1, 0.375, 1, 0.375, 0, 0.625, 0, 0.625, 0.25, 0.375, 0.25, 0.125, 0.5, 0.375, 0.5, 0.375, 0.75, 0.125, 0.75, 0.375, 0.5, 0.625, 0.5, 0.625, 0.75, 0.375, 0.75, 0.375, 0.25, 0.625, 0.25, 0.625, 0.5, 0.375, 0.5]
-            mesh.subdivisionScheme = "none"
-            mesh.familyType = "nonOverlapping"
-            mesh.blenderDataName = "Armature"
+            // mesh.doubleSided = true
+            // mesh.extent = [-1, -1, -1, 1, 1, 1]
+            // mesh.faceVertexCounts = [4, 4, 4, 4, 4, 4]
+            // mesh.faceVertexIndices = [0, 4, 6, 2, 3, 2, 6, 7, 7, 6, 4, 5, 5, 1, 3, 7, 1, 0, 2, 3, 5, 4, 0, 1]
+            // mesh.materialBinding = {
+            //     isExplicit: true,
+            //     explicit: [gray]
+            // }
+            // mesh.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]
+            // mesh.points = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1]
+            // mesh.texCoords = [0.625, 0.5, 0.875, 0.5, 0.875, 0.75, 0.625, 0.75, 0.375, 0.75, 0.625, 0.75, 0.625, 1, 0.375, 1, 0.375, 0, 0.625, 0, 0.625, 0.25, 0.375, 0.25, 0.125, 0.5, 0.375, 0.5, 0.375, 0.75, 0.125, 0.75, 0.375, 0.5, 0.625, 0.5, 0.625, 0.75, 0.375, 0.75, 0.375, 0.25, 0.625, 0.25, 0.625, 0.5, 0.375, 0.5]
+            // mesh.subdivisionScheme = "none"
+            // mesh.familyType = "nonOverlapping"
+            // mesh.blenderDataName = "Armature"
 
             // this mesh addionally needs
             //   fields:
@@ -1076,11 +1083,11 @@ describe("USD", () => {
             //     material:binding,                        PARTIAL, NEEDS RELATION TO USDNODE
             //     subsetFamily:materialBind:familyType     DONE
 
-            const grayFace = new GeomSubset(mesh, "gray")
-            new VariabilityAttr(grayFace, "elementType", Variability.Uniform, "face")
-            new VariabilityAttr(grayFace, "familyName", Variability.Uniform, "materialBind")
-            new IntArrayAttr(grayFace, "indices", [1, 2, 3])
-            new Relationship(grayFace, "material:binding", { isExplicit: true, explicit: [gray] })
+            // const grayFace = new GeomSubset(mesh, "gray")
+            // new VariabilityAttr(grayFace, "elementType", Variability.Uniform, "face")
+            // new VariabilityAttr(grayFace, "familyName", Variability.Uniform, "materialBind")
+            // new IntArrayAttr(grayFace, "indices", [1, 2, 3])
+            // new Relationship(grayFace, "material:binding", { isExplicit: true, explicit: [gray] })
 
             // _materials
 
@@ -1100,8 +1107,8 @@ describe("USD", () => {
             const pseudoRootIn = stage.getPrimAtPath("/")!.toJSON()
 
             writeFileSync("constructed.usdc", Buffer.from(crate.writer.buffer))
-            writeFileSync("original.json", JSON.stringify(orig, undefined, 4))
-            writeFileSync("constructed.json", JSON.stringify(pseudoRootIn, undefined, 4))
+            writeFileSync("original.json", stringify(orig, {indent: 4}))
+            writeFileSync("constructed.json", stringify(pseudoRootIn, {indent: 4}))
 
             compare(pseudoRootIn, orig)
         })

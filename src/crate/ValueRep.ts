@@ -68,9 +68,9 @@ export class ValueRep {
                 if (!this.isInlined() && this.isArray() && !this.isCompressed()) {
                     crate.reader.offset = this.getIndex()
                     const n = crate.reader.getUint64()
-                    const arr = new Array<string>(n)
+                    const arr = new Array<number>(n)
                     for (let i = 0; i < n; ++i) {
-                        arr[i] = crate.tokens.get(crate.reader.getFloat32())
+                        arr[i] = crate.reader.getFloat32()
                     }
                     return arr
                 }

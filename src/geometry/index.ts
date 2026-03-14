@@ -125,6 +125,22 @@ export class SkelRoot extends Boundable {
     }
 }
 
+export class Skeleton extends Boundable {
+    customData?: any
+
+    constructor(parent: UsdNode, name: string) {
+        super(parent.crate, parent, -1, name, true)
+        this.spec_type = SpecType.Prim
+        this.specifier = Specifier.Def
+        this.typeName = "Skeleton"
+    }
+
+    override encodeFields(): void {
+        super.encodeFields()
+        this.setCustomData("customData", this.customData)
+    }
+}
+
 // Cube size
 // Sphere radius
 // Cylinder
