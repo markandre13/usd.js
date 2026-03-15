@@ -1,5 +1,5 @@
-import { Attribute } from "../attributes/Attribute.ts"
 import { AttributeX } from "../attributes/AttributeX.ts"
+import { StringAttr } from "../attributes/index.ts"
 import { Boundable } from "../geometry/Boundable.ts"
 
 /**
@@ -41,8 +41,7 @@ export class BoundableLightBase extends Boundable {
     set blenderDataName(value: string | undefined) {
         this.deleteChild("userProperties:blender:data_name")
         if (value !== undefined) {
-            const attr = new Attribute(this, "userProperties:blender:data_name", value)
-            attr.custom = true
+            new StringAttr(this, "userProperties:blender:data_name", value, {custom: true})
         }
     }
 }

@@ -1,6 +1,6 @@
 import { Variability } from "../../crate/Variability.ts"
-import { Attribute } from "../attributes/Attribute.ts"
 import { AttributeX } from "../attributes/AttributeX.ts"
+import { StringAttr } from "../attributes/index.ts"
 import { Imageable } from "./Imageable.ts"
 
 /**
@@ -20,8 +20,7 @@ export abstract class Xformable extends Imageable {
     set blenderObjectName(value: string | undefined) {
         this.deleteChild("userProperties:blender:object_name")
         if (value !== undefined) {
-            const attr2 = new Attribute(this, "userProperties:blender:object_name", value)
-            attr2.custom = true
+            new StringAttr(this, "userProperties:blender:object_name", value, {custom: true})
         }
     }
     set rotateXYZ(value: number[] | undefined) {

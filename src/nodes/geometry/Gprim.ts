@@ -1,5 +1,5 @@
 import { Variability } from "../../crate/Variability.ts"
-import { Attribute } from "../attributes/Attribute.ts"
+import { BooleanAttr } from "../attributes/index.ts"
 import { Boundable } from "./Boundable.ts"
 
 /**
@@ -18,9 +18,7 @@ export class Gprim extends Boundable {
     set doubleSided(value: boolean | undefined) {
         this.deleteChild("doubleSided")
         if (value !== undefined) {
-            const attr = new Attribute(this, "doubleSided", value)
-            attr.custom = undefined
-            attr.variability = Variability.Uniform
+            new BooleanAttr(this, "doubleSided", value, {variability: Variability.Uniform})
         }
     }
 }

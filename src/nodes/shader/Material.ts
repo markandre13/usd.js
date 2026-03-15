@@ -1,7 +1,7 @@
 import { Specifier } from "../../crate/Specifier.ts"
 import { SpecType } from "../../crate/SpecType.ts"
 import type { UsdNode } from "../../crate/UsdNode.ts"
-import { Attribute } from "../attributes/Attribute.ts"
+import { StringAttr } from "../attributes/index.ts"
 import { NodeGraph } from "./NodeGraph.ts"
 
 /**
@@ -20,8 +20,7 @@ export class Material extends NodeGraph {
     set blenderDataName(value: string | undefined) {
         this.deleteChild("userProperties:blender:data_name")
         if (value !== undefined) {
-            const attr = new Attribute(this, "userProperties:blender:data_name", value)
-            attr.custom = true
+            new StringAttr(this, "userProperties:blender:data_name", value, {custom: true})
         }
     }
 }

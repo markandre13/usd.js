@@ -1,8 +1,8 @@
 import { Specifier } from "../../crate/Specifier.ts"
 import { SpecType } from "../../crate/SpecType.ts"
 import type { UsdNode } from "../../crate/UsdNode.ts"
-import { Attribute } from "../attributes/Attribute.ts"
 import { AttributeX } from "../attributes/AttributeX.ts"
+import { StringAttr } from "../attributes/index.ts"
 import { Boundable } from "./Boundable.ts"
 
 /**
@@ -87,8 +87,7 @@ export class Camera extends Boundable {
     set blenderDataName(value: string | undefined) {
         this.deleteChild("userProperties:blender:data_name")
         if (value !== undefined) {
-            const attr = new Attribute(this, "userProperties:blender:data_name", value)
-            attr.custom = true
+            new StringAttr(this, "userProperties:blender:data_name", value, {custom: true})
         }
     }
 }

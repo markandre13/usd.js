@@ -3,9 +3,8 @@ import { Specifier } from "../../crate/Specifier.ts"
 import { SpecType } from "../../crate/SpecType.ts"
 import type { UsdNode } from "../../crate/UsdNode.ts"
 import { Variability } from "../../crate/Variability.ts"
-import { Attribute } from "../attributes/Attribute.ts"
 import { AttributeX } from "../attributes/AttributeX.ts"
-import { IntArrayAttr, Relationship, VariabilityAttr } from "../attributes/index.ts"
+import { IntArrayAttr, Relationship, StringAttr, VariabilityAttr } from "../attributes/index.ts"
 import type { Skeleton } from "../skeleton/Skeleton.ts"
 
 import { PointBased } from "./PointBased.ts"
@@ -42,8 +41,7 @@ export class Mesh extends PointBased {
     set blenderDataName(value: string | undefined) {
         this.deleteChild("userProperties:blender:data_name")
         if (value !== undefined) {
-            const attr = new Attribute(this, "userProperties:blender:data_name", value)
-            attr.custom = true
+            new StringAttr(this, "userProperties:blender:data_name", value, {custom: true})
         }
     }
 
