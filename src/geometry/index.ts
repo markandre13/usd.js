@@ -685,10 +685,25 @@ export class Scope extends Imageable {
     }
 }
 
-export class Material extends UsdNode {
+/**
+ * A node-graph is a container for shading nodes, as well as other 
+ * node-graphs. It has a public input interface and provides a list of public 
+ * outputs.
+ */
+class NodeGraph extends Typed {}
+
+/**
+ * A Material provides a container into which multiple "render contexts"
+ * can add data that defines a "shading material" for a renderer.
+ * 
+ * defined in pxr/usd/usdShade/schema.usda
+ */
+export class Material extends NodeGraph {
     constructor(parent: UsdNode, name: string) {
         super(parent.crate, parent, -1, name, true)
         this.spec_type = SpecType.Prim
+        this.specifier = Specifier.Def
+        this.typeName = "Material"
     }
     set blenderDataName(value: string | undefined) {
         this.deleteChild("userProperties:blender:data_name")
@@ -696,17 +711,6 @@ export class Material extends UsdNode {
             const attr = new Attribute(this, "userProperties:blender:data_name", value)
             attr.custom = true
         }
-    }
-    override encodeFields() {
-        super.encodeFields()
-        const crate = this.crate
-
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setSpecifier("specifier", Specifier.Def)
-        )
-        crate.fieldsets.fieldset_indices.push(
-            crate.fields.setToken("typeName", "Material")
-        )
     }
 }
 
