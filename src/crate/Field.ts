@@ -1,4 +1,4 @@
-import type { TokenIndex } from "../index.ts"
+import type { TokenIndex } from "../compression/compress.ts"
 import type { ValueRep } from "./ValueRep.ts"
 
 export class Field {

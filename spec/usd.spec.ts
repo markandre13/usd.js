@@ -1,6 +1,7 @@
 import { hexdump, parseHexDump } from "../src/detail/hexdump.ts"
 import { expect } from "chai"
-import { compressToBuffer, decompressFromBuffer, UsdStage } from "../src/index.ts"
+import { compressToBuffer, decompressFromBuffer } from "../src/compression/compress.ts"
+import { Stage } from "../src/crate/Stage.ts"
 import { readFileSync, writeFileSync } from "fs"
 import { Reader } from "../src/crate/Reader.ts"
 import { SpecType } from "../src/crate/SpecType.ts"
@@ -11,7 +12,7 @@ import { TableOfContents } from "../src/crate/TableOfContents.ts"
 import { Section } from "../src/crate/Section.ts"
 import { Tokens } from "../src/crate/Tokens.ts"
 import { SectionName } from "../src/crate/SectionName.ts"
-import { Fields, type ListOp } from "../src/crate/Fields.ts"
+import { Fields } from "../src/crate/Fields.ts"
 import { Crate } from "../src/crate/Crate.ts"
 import { Paths } from "../src/crate/Paths.ts"
 import { UsdNode } from "../src/crate/UsdNode.ts"
@@ -77,14 +78,14 @@ function makeCreate() {
 
 function wrangle(root: UsdNode, path: string = "/") {
     root.crate.serialize(root)
-    const stage = new UsdStage(Buffer.from(root.crate.writer.buffer))
+    const stage = new Stage(Buffer.from(root.crate.writer.buffer))
     return stage.getPrimAtPath(path)
 }
 
 describe("USD", () => {
     it("READ", () => {
         const buffer = readFileSync("spec/examples/armature.usdc")
-        const stage = new UsdStage(buffer)
+        const stage = new Stage(buffer)
         const origPseudoRoot = stage.getPrimAtPath("/")!
         const orig = origPseudoRoot.toJSON()
         // console.log(JSON.stringify(orig, undefined, 4))
@@ -649,7 +650,7 @@ describe("USD", () => {
     })
     it("read cube.usdc and compare it with cube.json", () => {
         const buffer = readFileSync("spec/cube.usdc")
-        const stage = new UsdStage(buffer)
+        const stage = new Stage(buffer)
 
         const pseudoRoot = stage.getPrimAtPath("/")!
         expect(pseudoRoot).to.not.be.undefined
@@ -732,7 +733,7 @@ describe("USD", () => {
             crate.serialize(pseudoRoot)
 
             // deserialize
-            const stage = new UsdStage(Buffer.from(crate.writer.buffer))
+            const stage = new Stage(Buffer.from(crate.writer.buffer))
             const pseudoRootIn = stage.getPrimAtPath("/")!.toJSON()
 
             const filename = prefix.split('/').pop()
@@ -831,7 +832,7 @@ describe("USD", () => {
             // console.log("----------------")
 
             // deserialize 
-            const stage = new UsdStage(Buffer.from(crate.writer.buffer))
+            const stage = new Stage(Buffer.from(crate.writer.buffer))
 
             // stage._crate.print()
 
@@ -955,7 +956,7 @@ describe("USD", () => {
             // console.log("----------------")
 
             // deserialize 
-            const stage = new UsdStage(Buffer.from(crate.writer.buffer))
+            const stage = new Stage(Buffer.from(crate.writer.buffer))
 
             // stage._crate.print()
 

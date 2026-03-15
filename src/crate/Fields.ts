@@ -1,4 +1,4 @@
-import { compressToBuffer, decompressFromBuffer } from "../index.ts"
+import { compressToBuffer, decompressFromBuffer } from "../compression/compress.ts"
 import { CrateDataType, ListOpHeader } from "./CrateDataType.ts"
 import { Field } from "./Field.ts"
 import { compressBound } from "../compression/lz4.ts"

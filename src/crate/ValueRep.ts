@@ -13,7 +13,7 @@ import type { Crate } from "./Crate.ts"
 import { Specifier } from "./Specifier.ts"
 import { UsdNode } from "./UsdNode.js"
 import { Variability } from "./Variability.js"
-import { decompressFromBuffer } from "../index.ts"
+import { decompressFromBuffer } from "../compression/compress.ts"
 import type { ListOp } from "./Fields.ts"
 
 export const kMinCompressedArraySize = 16

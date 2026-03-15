@@ -1,5 +1,5 @@
 import { hexdump } from "../detail/hexdump.ts"
-import { compressToBuffer, decompressFromBuffer } from "../index.ts"
+import { compressToBuffer, decompressFromBuffer } from "../compression/compress.ts"
 import type { Reader } from "./Reader.ts"
 import type { Writer } from "./Writer.ts"
 
