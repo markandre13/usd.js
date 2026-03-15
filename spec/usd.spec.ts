@@ -89,7 +89,7 @@ describe("USD", () => {
         const origPseudoRoot = stage.getPrimAtPath("/")!
         const orig = origPseudoRoot.toJSON()
         // console.log(JSON.stringify(orig, undefined, 4))
-        console.log(stringify(orig, { indent: 4 }))
+        // console.log(stringify(orig, { indent: 4 }))
     })
     describe("nodes", () => {
         describe("PseudoRoot", () => {

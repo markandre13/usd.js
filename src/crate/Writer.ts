@@ -1,7 +1,7 @@
+import { compressToBuffer } from "../compression/compress.ts"
 import { encodeIntegers } from "../compression/integers.ts"
 import { compressBound } from "../compression/lz4.ts"
 import { hexdump } from "../detail/hexdump.ts"
-import { compressToBuffer } from "../compression/compress.ts"
 import { CrateDataType } from "./CrateDataType.ts"
 
 // pxr/usd/usdGeom/schema.usda

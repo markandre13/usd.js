@@ -1,22 +1,39 @@
 {
-    "name": "usd",
-    "version": "1.0.0",
+    "name": "@markandre13/usd.js",
+    "version": "0.0.1",
     "description": "universal scene description for typescript",
-    "license": "GPL-3.0",
     "author": "mhopf@mark13.org",
+    "license": "AGPL-3.0",
     "type": "module",
-    "main": "index.js",
-    "scripts": {
-        "test": "bun --watch node_modules/mocha/bin/mocha.js spec/usd.spec.ts"
+    "files": [
+        "README.md",
+        "LICENSE",
+        "package.json",
+        "dist"
+    ],
+    "exports": {
+        "./*": {
+            "import": "./dist/*.js",
+            "types": "./dist/*/*.d.ts"
+        }
     },
-    "dependencies": {
-        "gl-matrix": "^3.4.4"
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/markandre13/usd.js.git"
+    },
+    "scripts": {
+        "build": "tsc",
+        "test": "bun --watch node_modules/mocha/bin/mocha.js spec/usd.spec.ts"
     },
     "devDependencies": {
         "@types/chai": "^5.2.3",
         "@types/mocha": "^10.0.10",
-        "@types/node": "^25.2.3",
+        "@types/node": "^25.5.0",
         "chai": "^6.2.2",
-        "mocha": "^11.7.5"
+        "mocha": "^11.7.5",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "ts-patch": "^3.3.0"
     }
 }
