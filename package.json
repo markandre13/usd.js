@@ -1,6 +1,6 @@
 {
     "name": "@markandre13/usd.js",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "universal scene description for typescript",
     "author": "mhopf@mark13.org",
     "license": "AGPL-3.0",
@@ -31,9 +31,7 @@
         "@types/node": "^25.5.0",
         "chai": "^6.2.2",
         "mocha": "^11.7.5",
+        "ts-patch": "^3.3.0",
         "typescript": "^5.9.3"
-    },
-    "dependencies": {
-        "ts-patch": "^3.3.0"
     }
 }
