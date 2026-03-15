@@ -46,7 +46,50 @@ export class Imageable extends Typed { }
  * 
  * defined in pxr/usd/usdGeom/schema.usda
  */
-export class Xformable extends Imageable { }
+export abstract class Xformable extends Imageable {
+    customData?: any
+
+    override encodeFields(): void {
+        super.encodeFields()
+        this.setCustomData("customData", this.customData)
+    }
+
+    set blenderObjectName(value: string | undefined) {
+        this.deleteChild("userProperties:blender:object_name")
+        if (value !== undefined) {
+            const attr2 = new Attribute(this, "userProperties:blender:object_name", value)
+            attr2.custom = true
+        }
+    }
+    set rotateXYZ(value: number[] | undefined) {
+        this.deleteChild("xformOp:rotateXYZ")
+        new AttributeX(this, "xformOp:rotateXYZ", (node) => {
+            node.setToken("typeName", "float3")
+            node.setVec3f("default", value)
+        })
+    }
+    set scale(value: number[] | undefined) {
+        this.deleteChild("xformOp:scale")
+        new AttributeX(this, "xformOp:scale", (node) => {
+            node.setToken("typeName", "float3")
+            node.setVec3f("default", value)
+        })
+    }
+    set translate(value: number[] | undefined) {
+        this.deleteChild("xformOp:translate")
+        new AttributeX(this, "xformOp:translate", (node) => {
+            node.setToken("typeName", "double3")
+            node.setVec3d("default", value)
+        })
+    }
+    set xformOrder(value: ("xformOp:translate" | "xformOp:rotateXYZ" | "xformOp:scale")[] | undefined) {
+        new AttributeX(this, "xformOpOrder", (node) => {
+            node.setToken("typeName", "token[]")
+            node.setVariability("variability", Variability.Uniform)
+            node.setTokenArray("default", value)
+        })
+    }
+}
 
 /**
  * Concrete prim schema for a transform, which implements Xformable
@@ -54,18 +97,11 @@ export class Xformable extends Imageable { }
  * defined in pxr/usd/usdGeom/schema.usda
  */
 export class Xform extends Xformable {
-    customData?: any
-
     constructor(parent: UsdNode, name: string) {
         super(parent.crate, parent, -1, name, true)
         this.spec_type = SpecType.Prim
         this.specifier = Specifier.Def
         this.typeName = "Xform"
-    }
-
-    override encodeFields(): void {
-        super.encodeFields()
-        this.setCustomData("customData", this.customData)
     }
 }
 
@@ -110,18 +146,11 @@ export class Gprim extends Boundable {
  * defined in pxr/usd/usdSkel/schema.usda
  */
 export class SkelRoot extends Boundable {
-    customData?: any
-
     constructor(parent: UsdNode, name: string) {
         super(parent.crate, parent, -1, name, true)
         this.spec_type = SpecType.Prim
         this.specifier = Specifier.Def
         this.typeName = "SkelRoot"
-    }
-
-    override encodeFields(): void {
-        super.encodeFields()
-        this.setCustomData("customData", this.customData)
     }
 }
 
@@ -131,8 +160,6 @@ export class SkelRoot extends Boundable {
  * defined in pxr/usd/usdSkel/schema.usda
  */
 export class Skeleton extends Boundable {
-    customData?: any
-
     constructor(parent: UsdNode, name: string) {
         super(parent.crate, parent, -1, name, true)
         this.spec_type = SpecType.Prim
@@ -142,7 +169,6 @@ export class Skeleton extends Boundable {
 
     override encodeFields(): void {
         super.encodeFields()
-        this.setCustomData("customData", this.customData)
         this.setTokenListOp("apiSchemas", {
             prepend: ["SkelBindingAPI"]
         })
@@ -231,19 +257,12 @@ export class Skeleton extends Boundable {
  * defined in pxr/usd/usdGeom/schema.usda
  */
 export class Camera extends Boundable {
-    customData?: any
-
     constructor(parent: UsdNode, name: string) {
         super(parent.crate, parent, -1, name, true)
         this.spec_type = SpecType.Prim
         this.specifier = Specifier.Def
         this.typeName = "Camera"
     }
-
-    override encodeFields(): void {
-        super.encodeFields()
-        this.setCustomData("customData", this.customData)
-     }
 
     //
     // Viewing Frustum
@@ -445,17 +464,61 @@ export class Mesh extends PointBased {
     }
 }
 
-export class DomeLight extends UsdNode {
+class NonboundableLightBase extends UsdNode {
+    // set enableColorTemperature(value: boolean | undefined) {
+    //     this.deleteChild("inputs:enableColorTemperature")
+    //     if (value !== undefined) {
+    //         new AttributeX(this, "inputs:radius", (node) => {
+    //             node.setToken("typeName", "bool")
+    //             node.setBoolean("default", value)
+    //         })
+    //     }
+    // }
+    set normalize(value: boolean | undefined) {
+        this.deleteChild("inputs:normalize")
+        if (value !== undefined) {
+            new AttributeX(this, "inputs:normalize", (node) => {
+                node.setToken("typeName", "bool")
+                node.setBoolean("default", value)
+            })
+        }
+    }
+    set intensity(value: number | undefined) {
+        this.deleteChild("inputs:intensity")
+        if (value !== undefined) {
+            new AttributeX(this, "inputs:intensity", (node) => {
+                node.setToken("typeName", "float")
+                node.setFloat("default", value)
+            })
+        }
+    }
+    // set blenderDataName(value: string | undefined) {
+    //     this.deleteChild("userProperties:blender:data_name")
+    //     if (value !== undefined) {
+    //         const attr = new Attribute(this, "userProperties:blender:data_name", value)
+    //         attr.custom = true
+    //     }
+    // }
+}
+
+/**
+ * Light emitted inward from a distant external environment,
+ * such as a sky or IBL light probe.
+ *   
+ * In this version of the dome light, the dome's default orientation is such
+ * that its top pole is aligned with the world's +Y axis. This adheres to the
+ * OpenEXR specification for latlong environment maps.
+ * 
+ * defined in pxr/usd/usdLux/schema.usda
+ */
+export class DomeLight extends NonboundableLightBase {
     constructor(parent: UsdNode, name: string) {
         super(parent.crate, parent, -1, name, true)
         this.spec_type = SpecType.Prim
-        new FloatAttr(this, "inputs:intensity", 1)
-        new AssetPathAttr(this, "inputs:texture:file", "./textures/color_0C0C0C.exr")
     }
     override encodeFields() {
         super.encodeFields()
         const crate = this.crate
-
         crate.fieldsets.fieldset_indices.push(
             crate.fields.setSpecifier("specifier", Specifier.Def)
         )
@@ -463,6 +526,91 @@ export class DomeLight extends UsdNode {
             crate.fields.setToken("typeName", "DomeLight")
         )
     }
+
+    set textureFile(value: string | undefined) {
+        this.deleteChild("nputs:texture:file")
+        if (value !== undefined) {
+            new AssetPathAttr(this, "inputs:texture:file", value)
+        }
+    }
+
+    // inputs:texture:file
+    // inputs:texture:format
+    // guideRadius
+}
+
+/**
+ * Base class for intrinsic lights that are boundable.
+ *
+ * The primary purpose of this class is to provide a direct API to the 
+ * functions provided by LightAPI for concrete derived light types.
+ * 
+ * defined in pxr/usd/usdLux/schema.usda
+ */
+class BoundableLightBase extends Boundable {
+    set enableColorTemperature(value: boolean | undefined) {
+        this.deleteChild("inputs:enableColorTemperature")
+        if (value !== undefined) {
+            new AttributeX(this, "inputs:enableColorTemperature", (node) => {
+                node.setToken("typeName", "bool")
+                node.setBoolean("default", value)
+            })
+        }
+    }
+    set normalize(value: boolean | undefined) {
+        this.deleteChild("inputs:normalize")
+        if (value !== undefined) {
+            new AttributeX(this, "inputs:normalize", (node) => {
+                node.setToken("typeName", "bool")
+                node.setBoolean("default", value)
+            })
+        }
+    }
+    set intensity(value: number | undefined) {
+        this.deleteChild("inputs:intensity")
+        if (value !== undefined) {
+            new AttributeX(this, "inputs:intensity", (node) => {
+                node.setToken("typeName", "float")
+                node.setFloat("default", value)
+            })
+        }
+    }
+    set blenderDataName(value: string | undefined) {
+        this.deleteChild("userProperties:blender:data_name")
+        if (value !== undefined) {
+            const attr = new Attribute(this, "userProperties:blender:data_name", value)
+            attr.custom = true
+        }
+    }
+}
+
+/**
+ * Light emitted outward from a sphere.
+ * 
+ * defined in pxr/usd/usdLux/schema.usda
+ */
+export class SphereLight extends BoundableLightBase {
+    constructor(parent: UsdNode, name: string) {
+        super(parent.crate, parent, -1, name, true)
+        this.spec_type = SpecType.Prim
+        this.specifier = Specifier.Def
+        this.typeName = "SphereLight"
+
+    }
+
+    /**
+     * Radius of the sphere.
+     */
+    set radius(value: number | undefined) {
+        this.deleteChild("inputs:radius")
+        if (value !== undefined) {
+            new AttributeX(this, "inputs:radius", (node) => {
+                node.setToken("typeName", "float")
+                node.setFloat("default", value)
+            })
+        }
+    }
+    // treatAsPoint
 }
 
 /**

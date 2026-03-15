@@ -1003,6 +1003,26 @@
                     "name": "Camera",
                     "prim": true,
                     "fields": {
+                        "properties": {
+                            "type": "TokenVector",
+                            "inline": false,
+                            "array": false,
+                            "compressed": false,
+                            "value": [
+                                "userProperties:blender:object_name",
+                                "xformOp:rotateXYZ",
+                                "xformOp:scale",
+                                "xformOp:translate",
+                                "xformOpOrder"
+                            ]
+                        },
+                        "primChildren": {
+                            "type": "TokenVector",
+                            "inline": false,
+                            "array": false,
+                            "compressed": false,
+                            "value": ["Camera"]
+                        },
                         "specifier": {
                             "type": "Specifier",
                             "inline": true,
@@ -1016,26 +1036,6 @@
                             "array": false,
                             "compressed": false,
                             "value": "Xform"
-                        },
-                        "properties": {
-                            "type": "TokenVector",
-                            "inline": false,
-                            "array": false,
-                            "compressed": false,
-                            "value": [
-                                "xformOp:translate",
-                                "xformOpOrder",
-                                "xformOp:rotateXYZ",
-                                "xformOp:scale",
-                                "userProperties:blender:object_name"
-                            ]
-                        },
-                        "primChildren": {
-                            "type": "TokenVector",
-                            "inline": false,
-                            "array": false,
-                            "compressed": false,
-                            "value": ["Camera"]
                         }
                     },
                     "children": [
@@ -1173,12 +1173,12 @@
                                     "array": false,
                                     "compressed": false,
                                     "value": [
-                                        "projection",
+                                        "clippingRange",
                                         "focalLength",
                                         "horizontalAperture",
-                                        "verticalAperture",
-                                        "clippingRange",
-                                        "userProperties:blender:data_name"
+                                        "projection",
+                                        "userProperties:blender:data_name",
+                                        "verticalAperture"
                                     ]
                                 },
                                 "specifier": {
@@ -1339,6 +1339,26 @@
                     "name": "Light",
                     "prim": true,
                     "fields": {
+                        "properties": {
+                            "type": "TokenVector",
+                            "inline": false,
+                            "array": false,
+                            "compressed": false,
+                            "value": [
+                                "xformOp:translate",
+                                "xformOp:rotateXYZ",
+                                "xformOp:scale",
+                                "xformOpOrder",
+                                "userProperties:blender:object_name"
+                            ]
+                        },
+                        "primChildren": {
+                            "type": "TokenVector",
+                            "inline": false,
+                            "array": false,
+                            "compressed": false,
+                            "value": ["Light"]
+                        },
                         "specifier": {
                             "type": "Specifier",
                             "inline": true,
@@ -1352,26 +1372,6 @@
                             "array": false,
                             "compressed": false,
                             "value": "Xform"
-                        },
-                        "properties": {
-                            "type": "TokenVector",
-                            "inline": false,
-                            "array": false,
-                            "compressed": false,
-                            "value": [
-                                "xformOp:translate",
-                                "xformOpOrder",
-                                "xformOp:rotateXYZ",
-                                "xformOp:scale",
-                                "userProperties:blender:object_name"
-                            ]
-                        },
-                        "primChildren": {
-                            "type": "TokenVector",
-                            "inline": false,
-                            "array": false,
-                            "compressed": false,
-                            "value": ["Light"]
                         }
                     },
                     "children": [
@@ -1503,6 +1503,20 @@
                             "name": "Light",
                             "prim": true,
                             "fields": {
+                                "properties": {
+                                    "type": "TokenVector",
+                                    "inline": false,
+                                    "array": false,
+                                    "compressed": false,
+                                    "value": [
+                                        "extent",
+                                        "inputs:enableColorTemperature",
+                                        "inputs:intensity",
+                                        "inputs:normalize",
+                                        "inputs:radius",
+                                        "userProperties:blender:data_name"
+                                    ]
+                                },
                                 "specifier": {
                                     "type": "Specifier",
                                     "inline": true,
@@ -1516,20 +1530,6 @@
                                     "array": false,
                                     "compressed": false,
                                     "value": "SphereLight"
-                                },
-                                "properties": {
-                                    "type": "TokenVector",
-                                    "inline": false,
-                                    "array": false,
-                                    "compressed": false,
-                                    "value": [
-                                        "inputs:radius",
-                                        "inputs:intensity",
-                                        "inputs:enableColorTemperature",
-                                        "inputs:normalize",
-                                        "userProperties:blender:data_name",
-                                        "extent"
-                                    ]
                                 }
                             },
                             "children": [

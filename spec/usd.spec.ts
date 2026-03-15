@@ -20,7 +20,7 @@ import { FieldSets } from "../src/crate/FieldSets.ts"
 import { Specs } from "../src/crate/Specs.ts"
 import { compressBound } from "../src/compression/lz4.ts"
 import { decodeIntegers, encodeIntegers } from "../src/compression/integers.ts"
-import { Attribute, AttributeX, Camera, DomeLight, GeomSubset, Material, Mesh, Scope, Shader, Skeleton, SkelRoot, Xform } from "../src/geometry/index.ts"
+import { Attribute, AttributeX, Camera, DomeLight, GeomSubset, Material, Mesh, Scope, Shader, Skeleton, SkelRoot, SphereLight, Xform } from "../src/geometry/index.ts"
 import { PseudoRoot } from "../src/geometry/PseudoRoot.ts"
 import { ValueRep } from "../src/crate/ValueRep.ts"
 import { IntArrayAttr, Relationship, VariabilityAttr } from "../src/attributes/index.ts"
@@ -959,25 +959,11 @@ describe("USD", () => {
 
             // const cube = new Xform(root, "Armature")
             const skelRoot = new SkelRoot(root, "Armature")
-            const attr = new Attribute(skelRoot, "userProperties:blender:object_name", "Armature")
-            attr.custom = true
-            new AttributeX(skelRoot, "xformOp:rotateXYZ", (node) => {
-                node.setToken("typeName", "float3")
-                node.setVec3f("default", [0, 0, 0])
-            })
-            new AttributeX(skelRoot, "xformOp:scale", (node) => {
-                node.setToken("typeName", "float3")
-                node.setVec3f("default", [1, 1, 1])
-            })
-            new AttributeX(skelRoot, "xformOp:translate", (node) => {
-                node.setToken("typeName", "double3")
-                node.setVec3d("default", [0, 0, -1])
-            })
-            new AttributeX(skelRoot, "xformOpOrder", (node) => {
-                node.setToken("typeName", "token[]")
-                node.setVariability("variability", Variability.Uniform)
-                node.setTokenArray("default", ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"])
-            })
+            skelRoot.blenderObjectName = "Armature"
+            skelRoot.rotateXYZ = [0, 0, 0]
+            skelRoot.scale = [1, 1, 1]
+            skelRoot.translate = [0, 0, -1]
+            skelRoot.xformOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
 
             const skeleton = new Skeleton(skelRoot, "Armature")
             skeleton.bindTransforms = [1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 1, 1]
@@ -986,25 +972,11 @@ describe("USD", () => {
             skeleton.restTransforms = [1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1]
 
             const cameraParent = new Xform(root, "Camera")
-            const attr2 = new Attribute(skelRoot, "userProperties:blender:object_name", "Camera")
-            attr2.custom = true
-            new AttributeX(cameraParent, "xformOp:rotateXYZ", (node) => {
-                node.setToken("typeName", "float3")
-                node.setVec3f("default", [63.559295654296875, 2.2983238068263745e-7, 46.69194412231445])
-            })
-            new AttributeX(cameraParent, "xformOp:scale", (node) => {
-                node.setToken("typeName", "float3")
-                node.setVec3f("default", [1, 1, 1])
-            })
-            new AttributeX(cameraParent, "xformOp:translate", (node) => {
-                node.setToken("typeName", "double3")
-                node.setVec3d("default", [7.358891487121582, -6.925790786743164, 4.958309173583984])
-            })
-            new AttributeX(cameraParent, "xformOpOrder", (node) => {
-                node.setToken("typeName", "token[]")
-                node.setVariability("variability", Variability.Uniform)
-                node.setTokenArray("default", ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"])
-            })
+            cameraParent.blenderObjectName = "Camera"
+            cameraParent.rotateXYZ = [63.559295654296875, 2.2983238068263745e-7, 46.69194412231445]
+            cameraParent.scale = [1, 1, 1]
+            cameraParent.translate = [7.358891487121582, -6.925790786743164, 4.958309173583984]
+            cameraParent.xformOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
 
             const camera = new Camera(cameraParent, "Camera")
             camera.clippingRange = [0.1, 100]
@@ -1015,21 +987,25 @@ describe("USD", () => {
             camera.verticalAperture = 0.2025
 
             const lightParent = new Xform(root, "Light")
+            lightParent.blenderObjectName = "Light"
+            lightParent.rotateXYZ = [37.26105, 3.1637092, 106.936328]
+            lightParent.scale = [1, 0.99999996, 1]
+            lightParent.translate = [4.076245307922363, 1.0054539442062379, 5.903861999511719]
+            lightParent.xformOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
 
-            // double3 xformOp:translate = (4.076245307922363, 1.0054539442062379, 5.903861999511719)
-            // float3 xformOp:rotateXYZ = (37.26105, 3.1637092, 106.936328)
-            // float3 xformOp:scale = (1, 0.99999996, 1)
-            // uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
-            // custom string userProperties:blender:object_name = "Light"
-
-            // lightParent.blenderObjectName = "Light"
-            // lightParent.rotateXYZ = 
-
-            // new SphereLight(lightParent, "Light")
+            const light = new SphereLight(lightParent, "Light")
+            light.extent = [ -0.10000000149011612, -0.10000000149011612, -0.10000000149011612, 0.10000000149011612, 0.10000000149011612, 0.10000000149011612 ]
+            light.enableColorTemperature = true
+            light.intensity = 318.30987548828125
+            light.normalize = true
+            light.radius = 0.10000000149011612
+            light.blenderDataName = "Light"
 
             const materials = new Scope(root, "_materials")
 
-            new DomeLight(root, "env_light")
+            const domeLight = new DomeLight(root, "env_light")
+            domeLight.intensity = 1.0
+            domeLight.textureFile = "./textures/color_0C0C0C.exr"
 
             function makePrincipled_BSDF(name: string, diffuseColor: number[]) {
                 const material = new Material(materials, name)
@@ -1094,35 +1070,13 @@ describe("USD", () => {
             const gray = makePrincipled_BSDF("Material", [0.8, 0.8, 0.8])
 
             const meshParent = new Xform(skelRoot, "Cube")
-            // line 436
-            // userProperties:blender:object_name
-            // xformOp:rotateXYZ
-            // xformOp:scale
-            // xformOp:translate
-            // xformOpOrder
-
-            const attr1 = new Attribute(meshParent, "userProperties:blender:object_name", "Cube")
-            attr1.custom = true
-            new AttributeX(meshParent, "xformOp:rotateXYZ", (node) => {
-                node.setToken("typeName", "float3")
-                node.setVec3f("default", [0, 0, 0])
-            })
-            new AttributeX(meshParent, "xformOp:scale", (node) => {
-                node.setToken("typeName", "float3")
-                node.setVec3f("default", [1, 1, 1])
-            })
-            new AttributeX(meshParent, "xformOp:translate", (node) => {
-                node.setToken("typeName", "double3")
-                node.setVec3d("default", [0, 0, 1])
-            })
-            new AttributeX(meshParent, "xformOpOrder", (node) => {
-                node.setToken("typeName", "token[]")
-                node.setVariability("variability", Variability.Uniform)
-                node.setTokenArray("default", ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"])
-            })
+            meshParent.blenderObjectName = "Cube"
+            meshParent.rotateXYZ = [0, 0, 0]
+            meshParent.scale = [1, 1, 1]
+            meshParent.translate = [0, 0, 1]
+            meshParent.xformOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
 
             const mesh = new Mesh(meshParent, "Cube")
-
             mesh.doubleSided = true
             mesh.extent = [-1, -1, -1, 1, 1, 1]
             mesh.faceVertexCounts = [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
@@ -1156,7 +1110,7 @@ describe("USD", () => {
             })
             mesh.subdivisionScheme = "none"
             // mesh.familyType = "nonOverlapping"
-            mesh.blenderDataName = "Armature"
+            mesh.blenderDataName = "Cube"
 
             // const grayFace = new GeomSubset(mesh, "gray")
             // new VariabilityAttr(grayFace, "elementType", Variability.Uniform, "face")

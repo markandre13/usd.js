@@ -395,7 +395,7 @@ export class Fields {
             this.valueReps.writeUint8(CrateDataType.Vec3d)
             this.valueReps.writeUint8(0)
             for (let i = 0; i < 3; ++i) {
-                this.data.writeFloat32(value[i])
+                this.data.writeFloat64(value[i])
             }
         }
         return idx
