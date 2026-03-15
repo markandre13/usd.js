@@ -1,7 +1,7 @@
 import { Specifier } from "../../crate/Specifier.ts"
 import { SpecType } from "../../crate/SpecType.ts"
 import type { UsdNode } from "../../crate/UsdNode.ts"
-import { AssetPathAttr } from "../attributes/index.ts"
+import { AssetPathAttr } from "../attributes/AssetPathAttr.ts"
 import { NonboundableLightBase } from "./NonboundableLightBase.ts"
 
 /**

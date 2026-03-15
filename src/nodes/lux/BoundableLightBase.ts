@@ -1,5 +1,5 @@
 import { Attribute } from "../attributes/Attribute.ts"
-import { StringAttr } from "../attributes/index.ts"
+import { StringAttr } from "../attributes/StringAttr.ts"
 import { Boundable } from "../geometry/Boundable.ts"
 
 /**

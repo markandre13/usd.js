@@ -1,5 +1,5 @@
 import { Variability } from "../../crate/Variability.ts"
-import { BooleanAttr } from "../attributes/index.ts"
+import { BooleanAttr } from "../attributes/BooleanAttr.ts"
 import { Boundable } from "./Boundable.ts"
 
 /**

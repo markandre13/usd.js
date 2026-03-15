@@ -1,4 +1,4 @@
-import { Vec3fArrayAttr } from "../attributes/index.ts"
+import { Vec3fArrayAttr } from "../attributes/Vec3fArrayAttr.ts"
 import { Xformable } from "./Xformable.ts"
 
 /**

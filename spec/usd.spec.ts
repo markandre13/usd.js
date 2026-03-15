@@ -36,7 +36,12 @@ import { ValueRep } from "../src/crate/ValueRep.ts"
 import { Variability } from "../src/crate/Variability.ts"
 import { stringify } from "./stringify.ts"
 import { Attribute } from "../src/nodes/attributes/Attribute.ts"
-import { Color3fAttr, FloatAttr, IntArrayAttr, Relationship, TokenAttr, VariabilityAttr } from "../src/nodes/attributes/index.ts"
+import { IntArrayAttr } from "../src/nodes/attributes/IntArrayAttr.ts"
+import { VariabilityAttr } from "../src/nodes/attributes/VariabilityAttr.ts"
+import { Relationship } from "../src/nodes/attributes/Relationship.ts"
+import { TokenAttr } from "../src/nodes/attributes/TokenAttr.ts"
+import { Color3fAttr } from "../src/nodes/attributes/Color3fAttr.ts"
+import { FloatAttr } from "../src/nodes/attributes/FloatAttr.ts"
 // UsdObject < UsdProperty < UsdAttribute
 //           < UsdPrim
 

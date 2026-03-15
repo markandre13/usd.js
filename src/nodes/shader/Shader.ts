@@ -1,7 +1,7 @@
 import { Specifier } from "../../crate/Specifier.ts"
 import { SpecType } from "../../crate/SpecType.ts"
 import type { UsdNode } from "../../crate/UsdNode.ts"
-import { StringAttr } from "../attributes/index.ts"
+import { StringAttr } from "../attributes/StringAttr.ts"
 import { Typed } from "../usd/Typed.ts"
 
 /**
