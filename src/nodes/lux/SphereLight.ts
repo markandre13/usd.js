@@ -1,7 +1,7 @@
 import { Specifier } from "../../crate/Specifier.ts"
 import { SpecType } from "../../crate/SpecType.ts"
 import type { UsdNode } from "../../crate/UsdNode.ts"
-import { AttributeX } from "../attributes/AttributeX.ts"
+import { Attribute } from "../attributes/Attribute.ts"
 import { BoundableLightBase } from "./BoundableLightBase.ts"
 
 /**
@@ -24,7 +24,7 @@ export class SphereLight extends BoundableLightBase {
     set radius(value: number | undefined) {
         this.deleteChild("inputs:radius")
         if (value !== undefined) {
-            new AttributeX(this, "inputs:radius", (node) => {
+            new Attribute(this, "inputs:radius", (node) => {
                 node.setToken("typeName", "float")
                 node.setFloat("default", value)
             })

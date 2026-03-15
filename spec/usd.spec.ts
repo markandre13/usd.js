@@ -35,7 +35,7 @@ import { PseudoRoot } from "../src/nodes/usd/PseudoRoot.ts"
 import { ValueRep } from "../src/crate/ValueRep.ts"
 import { Variability } from "../src/crate/Variability.ts"
 import { stringify } from "./stringify.ts"
-import { AttributeX } from "../src/nodes/attributes/AttributeX.ts"
+import { Attribute } from "../src/nodes/attributes/Attribute.ts"
 import { Color3fAttr, FloatAttr, IntArrayAttr, Relationship, TokenAttr, VariabilityAttr } from "../src/nodes/attributes/index.ts"
 // UsdObject < UsdProperty < UsdAttribute
 //           < UsdPrim
@@ -1493,7 +1493,7 @@ function makePrincipled_BSDF(scope: Scope, name: string, diffuseColor: number[])
 
     const surface = new TokenAttr(shader, "outputs:surface")
 
-    new AttributeX(material, "outputs:surface", (node) => {
+    new Attribute(material, "outputs:surface", (node) => {
         node.setToken("typeName", "token")
         node.setPathListOp("connectionPaths", {
             isExplicit: true,

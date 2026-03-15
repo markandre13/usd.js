@@ -2,7 +2,7 @@ import { Specifier } from "../../crate/Specifier.ts"
 import { SpecType } from "../../crate/SpecType.ts"
 import type { UsdNode } from "../../crate/UsdNode.ts"
 import { Variability } from "../../crate/Variability.ts"
-import { AttributeX } from "../attributes/AttributeX.ts"
+import { Attribute } from "../attributes/Attribute.ts"
 import { Boundable } from "../geometry/Boundable.ts"
 
 /**
@@ -36,7 +36,7 @@ export class Skeleton extends Boundable {
     set joints(value: string[] | undefined) {
         this.deleteChild("joints")
         if (value !== undefined) {
-            new AttributeX(this, "joints", (node) => {
+            new Attribute(this, "joints", (node) => {
                 node.setToken("typeName", "token[]")
                 node.setVariability("variability", Variability.Uniform)
                 node.setTokenArray("default", value)
@@ -51,7 +51,7 @@ export class Skeleton extends Boundable {
     set jointNames(value: string[] | undefined) {
         this.deleteChild("jointNames")
         if (value !== undefined) {
-            new AttributeX(this, "jointNames", (node) => {
+            new Attribute(this, "jointNames", (node) => {
                 node.setToken("typeName", "token[]")
                 node.setVariability("variability", Variability.Uniform)
                 node.setTokenArray("default", value)
@@ -66,7 +66,7 @@ export class Skeleton extends Boundable {
     set bindTransforms(value: number[] | undefined) {
         this.deleteChild("bindTransforms")
         if (value !== undefined) {
-            new AttributeX(this, "bindTransforms", (node) => {
+            new Attribute(this, "bindTransforms", (node) => {
                 node.setToken("typeName", "matrix4d[]")
                 node.setVariability("variability", Variability.Uniform)
                 node.setMatrix4dArray("default", value)
@@ -84,7 +84,7 @@ export class Skeleton extends Boundable {
     set restTransforms(value: number[] | undefined) {
         this.deleteChild("restTransforms")
         if (value !== undefined) {
-            new AttributeX(this, "restTransforms", (node) => {
+            new Attribute(this, "restTransforms", (node) => {
                 node.setToken("typeName", "matrix4d[]")
                 node.setVariability("variability", Variability.Uniform)
                 node.setMatrix4dArray("default", value)
@@ -94,7 +94,7 @@ export class Skeleton extends Boundable {
 
     set blenderBoneLength(value: number[] | undefined) {
         this.deleteChild("primvars:blender:bone_lengths")
-        new AttributeX(this, "primvars:blender:bone_lengths", (node) => {
+        new Attribute(this, "primvars:blender:bone_lengths", (node) => {
             node.setToken("typeName", "float[]")
             node.setToken("interpolation", "uniform")
             node.setFloatArray("default", value)

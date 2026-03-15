@@ -1,7 +1,7 @@
 import { Specifier } from "../../crate/Specifier.ts"
 import { SpecType } from "../../crate/SpecType.ts"
 import type { UsdNode } from "../../crate/UsdNode.ts"
-import { AttributeX } from "../attributes/AttributeX.ts"
+import { Attribute } from "../attributes/Attribute.ts"
 import { StringAttr } from "../attributes/index.ts"
 import { Boundable } from "./Boundable.ts"
 
@@ -23,21 +23,21 @@ export class Camera extends Boundable {
     //
     set projection(value: "perspective" | "orthographic" | undefined) {
         this.deleteChild("projection")
-        new AttributeX(this, "projection", (node) => {
+        new Attribute(this, "projection", (node) => {
             node.setToken("typeName", "token")
             node.setToken("default", value)
         })
     }
     set horizontalAperture(value: number | undefined) {
         this.deleteChild("horizontalAperture")
-        new AttributeX(this, "horizontalAperture", (node) => {
+        new Attribute(this, "horizontalAperture", (node) => {
             node.setToken("typeName", "float")
             node.setFloat("default", value)
         })
     }
     set verticalAperture(value: number | undefined) {
         this.deleteChild("verticalAperture")
-        new AttributeX(this, "verticalAperture", (node) => {
+        new Attribute(this, "verticalAperture", (node) => {
             node.setToken("typeName", "float")
             node.setFloat("default", value)
         })
@@ -46,14 +46,14 @@ export class Camera extends Boundable {
     // verticalApertureOffset
     set focalLength(value: number | undefined) {
         this.deleteChild("focalLength")
-        new AttributeX(this, "focalLength", (node) => {
+        new Attribute(this, "focalLength", (node) => {
             node.setToken("typeName", "float")
             node.setFloat("default", value)
         })
     }
     set clippingRange(value: number[] | undefined) {
         this.deleteChild("clippingRange")
-        new AttributeX(this, "clippingRange", (node) => {
+        new Attribute(this, "clippingRange", (node) => {
             node.setToken("typeName", "float2")
             node.setVec2f("default", value)
         })

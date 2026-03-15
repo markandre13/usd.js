@@ -3,7 +3,7 @@ import { Specifier } from "../../crate/Specifier.ts"
 import { SpecType } from "../../crate/SpecType.ts"
 import type { UsdNode } from "../../crate/UsdNode.ts"
 import { Variability } from "../../crate/Variability.ts"
-import { AttributeX } from "../attributes/AttributeX.ts"
+import { Attribute } from "../attributes/Attribute.ts"
 import { IntArrayAttr, Relationship, StringAttr, VariabilityAttr } from "../attributes/index.ts"
 import type { Skeleton } from "../skeleton/Skeleton.ts"
 
@@ -84,7 +84,7 @@ export class Mesh extends PointBased {
         this.deleteChild("primvars:skel:geomBindTransform")
         if (value !== undefined) {
             this.prependApiSchema("SkelBindingAPI")
-            new AttributeX(this, "primvars:skel:geomBindTransform", node => {
+            new Attribute(this, "primvars:skel:geomBindTransform", node => {
                 node.setToken("typeName", "matrix4d")
                 node.setMatrix4d("default", value)
             })
@@ -97,7 +97,7 @@ export class Mesh extends PointBased {
         this.deleteChild("primvars:skel:jointIndices")
         if (value !== undefined) {
             this.prependApiSchema("SkelBindingAPI")
-            new AttributeX(this, "primvars:skel:jointIndices", node => {
+            new Attribute(this, "primvars:skel:jointIndices", node => {
                 node.setToken("typeName", "int[]")
                 node.setToken("interpolation", "vertex")
                 node.setInt("elementSize", value.elementSize)
@@ -112,7 +112,7 @@ export class Mesh extends PointBased {
         this.deleteChild("primvars:skel:jointWeights")
         if (value !== undefined) {
             this.prependApiSchema("SkelBindingAPI")
-            new AttributeX(this, "primvars:skel:jointWeights", node => {
+            new Attribute(this, "primvars:skel:jointWeights", node => {
                 node.setToken("typeName", "float[]")
                 node.setToken("interpolation", "vertex")
                 node.setInt("elementSize", value.elementSize)

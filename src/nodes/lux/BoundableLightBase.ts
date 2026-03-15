@@ -1,4 +1,4 @@
-import { AttributeX } from "../attributes/AttributeX.ts"
+import { Attribute } from "../attributes/Attribute.ts"
 import { StringAttr } from "../attributes/index.ts"
 import { Boundable } from "../geometry/Boundable.ts"
 
@@ -14,7 +14,7 @@ export class BoundableLightBase extends Boundable {
     set enableColorTemperature(value: boolean | undefined) {
         this.deleteChild("inputs:enableColorTemperature")
         if (value !== undefined) {
-            new AttributeX(this, "inputs:enableColorTemperature", (node) => {
+            new Attribute(this, "inputs:enableColorTemperature", (node) => {
                 node.setToken("typeName", "bool")
                 node.setBoolean("default", value)
             })
@@ -23,7 +23,7 @@ export class BoundableLightBase extends Boundable {
     set normalize(value: boolean | undefined) {
         this.deleteChild("inputs:normalize")
         if (value !== undefined) {
-            new AttributeX(this, "inputs:normalize", (node) => {
+            new Attribute(this, "inputs:normalize", (node) => {
                 node.setToken("typeName", "bool")
                 node.setBoolean("default", value)
             })
@@ -32,7 +32,7 @@ export class BoundableLightBase extends Boundable {
     set intensity(value: number | undefined) {
         this.deleteChild("inputs:intensity")
         if (value !== undefined) {
-            new AttributeX(this, "inputs:intensity", (node) => {
+            new Attribute(this, "inputs:intensity", (node) => {
                 node.setToken("typeName", "float")
                 node.setFloat("default", value)
             })

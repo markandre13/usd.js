@@ -1,5 +1,5 @@
 import { Variability } from "../../crate/Variability.ts"
-import { AttributeX } from "../attributes/AttributeX.ts"
+import { Attribute } from "../attributes/Attribute.ts"
 import { StringAttr } from "../attributes/index.ts"
 import { Imageable } from "./Imageable.ts"
 
@@ -25,27 +25,27 @@ export abstract class Xformable extends Imageable {
     }
     set rotateXYZ(value: number[] | undefined) {
         this.deleteChild("xformOp:rotateXYZ")
-        new AttributeX(this, "xformOp:rotateXYZ", (node) => {
+        new Attribute(this, "xformOp:rotateXYZ", (node) => {
             node.setToken("typeName", "float3")
             node.setVec3f("default", value)
         })
     }
     set scale(value: number[] | undefined) {
         this.deleteChild("xformOp:scale")
-        new AttributeX(this, "xformOp:scale", (node) => {
+        new Attribute(this, "xformOp:scale", (node) => {
             node.setToken("typeName", "float3")
             node.setVec3f("default", value)
         })
     }
     set translate(value: number[] | undefined) {
         this.deleteChild("xformOp:translate")
-        new AttributeX(this, "xformOp:translate", (node) => {
+        new Attribute(this, "xformOp:translate", (node) => {
             node.setToken("typeName", "double3")
             node.setVec3d("default", value)
         })
     }
     set xformOrder(value: ("xformOp:translate" | "xformOp:rotateXYZ" | "xformOp:scale")[] | undefined) {
-        new AttributeX(this, "xformOpOrder", (node) => {
+        new Attribute(this, "xformOpOrder", (node) => {
             node.setToken("typeName", "token[]")
             node.setVariability("variability", Variability.Uniform)
             node.setTokenArray("default", value)
