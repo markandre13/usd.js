@@ -63,7 +63,7 @@ export class Skeleton extends Boundable {
      * Specifies the bind-pose transforms of each joint in
      * **world space**, in the ordering imposed by _joints_.
      */
-    set bindTransforms(value: number[] | undefined) {
+    set bindTransforms(value: ArrayLike<number> | undefined) {
         this.deleteChild("bindTransforms")
         if (value !== undefined) {
             new Attribute(this, "bindTransforms", (node) => {
@@ -81,7 +81,7 @@ export class Skeleton extends Boundable {
      * bound animation source, or when that animation source only contains
      * animation for a subset of a Skeleton's joints.
      */
-    set restTransforms(value: number[] | undefined) {
+    set restTransforms(value: ArrayLike<number> | undefined) {
         this.deleteChild("restTransforms")
         if (value !== undefined) {
             new Attribute(this, "restTransforms", (node) => {
@@ -92,7 +92,7 @@ export class Skeleton extends Boundable {
         }
     }
 
-    set blenderBoneLength(value: number[] | undefined) {
+    set blenderBoneLength(value: ArrayLike<number> | undefined) {
         this.deleteChild("primvars:blender:bone_lengths")
         new Attribute(this, "primvars:blender:bone_lengths", (node) => {
             node.setToken("typeName", "float[]")

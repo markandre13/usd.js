@@ -1,10 +1,9 @@
 import { SpecType } from "../../crate/SpecType"
 import { UsdNode } from "../../crate/UsdNode"
 
-
 export class Color3fAttr extends UsdNode {
-    value: number[]
-    constructor(parent: UsdNode, name: string, value: number[]) {
+    value: ArrayLike<number>
+    constructor(parent: UsdNode, name: string, value: ArrayLike<number>) {
         super(parent.crate, parent, -1, name, false)
         this.spec_type = SpecType.Attribute
         this.value = value

@@ -23,21 +23,21 @@ export abstract class Xformable extends Imageable {
             new StringAttr(this, "userProperties:blender:object_name", value, {custom: true})
         }
     }
-    set rotateXYZ(value: number[] | undefined) {
+    set rotateXYZ(value: ArrayLike<number> | undefined) {
         this.deleteChild("xformOp:rotateXYZ")
         new Attribute(this, "xformOp:rotateXYZ", (node) => {
             node.setToken("typeName", "float3")
             node.setVec3f("default", value)
         })
     }
-    set scale(value: number[] | undefined) {
+    set scale(value: ArrayLike<number> | undefined) {
         this.deleteChild("xformOp:scale")
         new Attribute(this, "xformOp:scale", (node) => {
             node.setToken("typeName", "float3")
             node.setVec3f("default", value)
         })
     }
-    set translate(value: number[] | undefined) {
+    set translate(value: ArrayLike<number> | undefined) {
         this.deleteChild("xformOp:translate")
         new Attribute(this, "xformOp:translate", (node) => {
             node.setToken("typeName", "double3")

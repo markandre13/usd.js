@@ -51,7 +51,7 @@ export class Camera extends Boundable {
             node.setFloat("default", value)
         })
     }
-    set clippingRange(value: number[] | undefined) {
+    set clippingRange(value: ArrayLike<number> | undefined) {
         this.deleteChild("clippingRange")
         new Attribute(this, "clippingRange", (node) => {
             node.setToken("typeName", "float2")

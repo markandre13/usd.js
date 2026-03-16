@@ -2,7 +2,6 @@ import { SpecType } from "../../crate/SpecType"
 import { UsdNode } from "../../crate/UsdNode"
 import type { Variability } from "../../crate/Variability"
 
-
 export class BooleanAttr extends UsdNode {
     value: boolean
     custom?: boolean

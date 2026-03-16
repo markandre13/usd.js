@@ -243,7 +243,7 @@ export class UsdNode {
             )
         }
     }
-    setIntArray(name: string, value?: number[]) {
+    setIntArray(name: string, value?: ArrayLike<number>) {
         if (value !== undefined) {
             this.crate.fieldsets.fieldset_indices.push(
                 this.crate.fields.setIntArray(name, value)
@@ -292,7 +292,7 @@ export class UsdNode {
             )
         }
     }
-    setFloatArray(name: string, value?: number[]) {
+    setFloatArray(name: string, value?: ArrayLike<number>) {
         if (value !== undefined) {
             this.crate.fieldsets.fieldset_indices.push(
                 this.crate.fields.setFloatArray(name, value)
