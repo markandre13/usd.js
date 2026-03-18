@@ -1,5 +1,13 @@
 # Universal Scene Description for TypeScript
 
-This package can create a USDC file matching Blender's initial cube scene and a skeleton.
+Tiny, dependency-free USDC library written in TypeScript.
 
-See the [usd.spec.ts](./spec/usd.spec.ts) for examples.
+_Tiny_ also means that only a tiny subset of USD has been implemented.
+
+* Mesh
+* Skeleton
+* Material
+* Camera
+* DomeLight, SphereLight
+
+See the [blender.spec.ts](./spec/blender.spec.ts) for examples.
