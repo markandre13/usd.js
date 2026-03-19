@@ -18,6 +18,14 @@ import { VariabilityAttr } from "../src/nodes/attributes/VariabilityAttr"
 import { Relationship } from "../src/nodes/attributes/Relationship"
 import { makePrincipledBSDF } from "../src/nodes/shader/blender/PrincipledBSDF"
 import { Crate } from "../src/crate/Crate"
+import { Attribute } from "../src/nodes/attributes/Attribute"
+import { Material } from "../src/nodes/shader/Material"
+import { Shader } from "../src/nodes/shader/Shader"
+import { TokenAttr } from "../src/nodes/attributes/TokenAttr"
+import { FloatAttr } from "../src/nodes/attributes/FloatAttr"
+import { Color3fAttr } from "../src/nodes/attributes/Color3fAttr"
+import { AssetPathAttr } from "../src/nodes/attributes/AssetPathAttr"
+import { StringAttr } from "../src/nodes/attributes/StringAttr"
 
 /**
  * re-create files generated with blender 5.0
@@ -313,6 +321,157 @@ describe("re-create blender 5.0 files", () => {
 
         compare(pseudoRootIn, orig)
     })
+    it("cube-textured.usdc", () => {
+        const prefix = "spec/examples/cube-textured"
+        // read the original
+        // const buffer = readFileSync(`${prefix}.usdc`)
+        // const stageIn = new Stage(buffer)
+        // const origPseudoRoot = stageIn.getPrimAtPath("/")!
+        // const orig = origPseudoRoot.toJSON()
+        // // console.log(JSON.stringify(orig, undefined, 4))
+        // writeFileSync(`${prefix}.json`, stringify(orig, {indent: 4}))
+
+        // read an adjusted, good enough variant of the original's JSON
+        const buffer = readFileSync(`${prefix}.json`)
+        const orig = JSON.parse(buffer.toString())
+
+        const crate = new Crate()
+
+        const pseudoRoot = new PseudoRoot(crate)
+        pseudoRoot.defaultPrim = "root"
+        pseudoRoot.documentation = "Blender v5.1.0"
+
+        const root = new Xform(pseudoRoot, "root")
+        root.customData = {
+            Blender: {
+                generated: true
+            }
+        }
+
+        const meshParent = new Xform(root, "Cube")
+        meshParent.blenderObjectName = "Cube"
+
+        const mesh = new Mesh(meshParent, "Cube")
+
+            const materials = new Scope(root, "_materials")
+
+        const material = new Material(materials, "Material")
+        new Attribute(material, "outputs:surface", (node) => {
+            node.setToken("typeName", "token")
+            node.setPathListOp("connectionPaths", {
+                isExplicit: true,
+                explicit: [surface]
+            })
+        })
+        material.blenderDataName = "Material"
+
+        const imageTexture = new Shader(material, "Image_Texture")
+        new TokenAttr(imageTexture, "info:id", Variability.Uniform, "UsdUVTexture")
+        new FloatAttr(imageTexture, "inputs:file", 1.5)
+        new Attribute(imageTexture, "inputs:sourceColorSpace", (node) => {
+            node.setToken("typeName", "float2")
+            node.setPathListOp("connectionPaths", {
+                isExplicit: true,
+                explicit: [uvmapOutputsRGB]
+            })
+        })
+        new TokenAttr(imageTexture, "inputs:st", undefined, "repeat")
+        new Attribute(imageTexture, "inputs:wrapS", (node) => {
+            node.setToken("typeName", "float2")
+            // TODO: value
+        })
+        new Attribute(imageTexture, "inputs:wrapT", (node) => {
+            node.setToken("typeName", "float3")
+            // TODO: value
+        })
+        const imageTextureOutputsRGB = new AssetPathAttr(imageTexture, "outputs:rgb", "./textures/cubetexture.png")
+
+        const shader = new Shader(material, "Principled_BSDF")
+        new TokenAttr(shader, "info:id", Variability.Uniform, "UsdPreviewSurface")
+        new FloatAttr(shader, "inputs:clearcoat", 0)
+        new FloatAttr(shader, "inputs:clearcoatRoughness", 0.029999999329447746)
+
+        // new Color3fAttr(shader, "inputs:diffuseColor", [1,1,1]) // float 1
+        new FloatAttr(shader, "inputs:diffuseColor", 1)
+
+        new FloatAttr(shader, "inputs:ior", 1)
+        new FloatAttr(shader, "inputs:metallic", 0.5)
+
+        // new FloatAttr(shader, "inputs:opacity", 1) // token: sRGB
+        new TokenAttr(shader, "inputs:opacity", undefined, "sRGB") // token: sRGB
+
+        new FloatAttr(shader, "inputs:roughness", 0.5)
+
+        // new FloatAttr(shader, "inputs:specular", 0.5) // string st
+        new StringAttr(shader, "inputs:specular", "st")
+
+        const surface = new TokenAttr(shader, "outputs:surface")
+
+        const uvmap = new Shader(material, "uvmap")
+        new TokenAttr(uvmap, "info:id", Variability.Uniform, "UsdPrimvarReader_float2")
+        // inputs:varname normal3f[]
+        new Attribute(uvmap, "inputs:varname", node => {
+            node.setToken("typeName", "normal3f[]")
+            node.setVec3fArray("default", [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0])
+            node.setToken("interpolation", "faceVarying")
+        })
+        const uvmapOutputsRGB = new TokenAttr(uvmap, "outputs:result", undefined, "repeat")
+
+        // makePrincipledBSDF(material, "Principled_BSDF", [1,2,3])
+
+        mesh.doubleSided = true
+        mesh.extent = [-1, -1, -1, 1, 1, 1]
+        mesh.faceVertexCounts = [4, 4, 4, 4, 4, 4]
+        mesh.faceVertexIndices = [0, 4, 6, 2, 3, 2, 6, 7, 7, 6, 4, 5, 5, 1, 3, 7, 1, 0, 2, 3, 5, 4, 0, 1]
+        mesh.materialBinding = "./textures/color_0C0C0C.exr"
+        // mesh.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0]
+        new Attribute(mesh, "normals", (node) => {
+            node.setToken("typeName", "color3f")
+            node.setPathListOp("connectionPaths", {
+                isExplicit: true,
+                explicit: [imageTextureOutputsRGB] // /root/_materials/Material/Image_...
+            })
+        })
+        mesh.points = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1]
+
+        mesh.texCoords = [0.7864828109741211, 0.4631108343601227, 0.4918825626373291, 0.4691932797431946, 0.7865025401115417, 0.9903982281684875, 0.48568177223205566, 0.9935183525085449, 0.9886826276779175, 0.4633080065250397, 0.7865025401115417, 0.2423480898141861, 0.00009958772716345266, 0.4661126136779785, 0.48337018489837646, 0.23920826613903046, 0.9917830228805542, 0.9935380220413208, 0.7865025401115417, 0.9999004602432251, 0.7865025401115417, 0.00009955812129192054, 0.4887821674346924, 0.9999595880508423, 0.4864705801010132, -0.009201617911458015, 0.0006620592903345823, 1.0013625621795654]
+        new Attribute(mesh, "primvars:st:indices", (node) => {
+            node.setToken("typeName", "int[]")
+            node.setIntArray("default", [0, 4, 8, 2, 3, 2, 9, 11, 12, 10, 5, 7, 6, 1, 3, 13, 1, 0, 2, 3, 7, 5, 0, 1])
+        })
+
+        mesh.subdivisionScheme = "none"
+        mesh.blenderDataName = "Cube"
+
+        const domeLight = new DomeLight(root, "env_light")
+        domeLight.intensity = 0
+        // domeLight.textureFile = "./textures/color_0C0C0C.exr"
+        new Relationship(domeLight, "inputs:texture:file", {
+            isExplicit: true,
+            explicit: [material]
+        })
+
+        // serialize everything into crate.writer
+        crate.serialize(pseudoRoot)
+        // crate.print()
+
+        // console.log("----------------")
+
+        // deserialize 
+        const stage = new Stage(Buffer.from(crate.writer.buffer))
+
+        // stage._crate.print()
+
+        const pseudoRootIn = stage.getPrimAtPath("/")!.toJSON()
+
+        const filename = prefix.split('/').pop()
+        writeFileSync(`${filename}-generated.usdc`, Buffer.from(crate.writer.buffer))
+        writeFileSync(`${filename}-original.json`, stringify(orig, { indent: 4 }))
+        writeFileSync(`${filename}-generated.json`, stringify(pseudoRootIn, { indent: 4 }))
+
+        compare(pseudoRootIn, orig)
+    })
+
 })
 
 // this is the thing i still need to write

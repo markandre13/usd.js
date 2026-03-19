@@ -286,6 +286,13 @@ export class UsdNode {
             )
         }
     }
+    setVec3fArray(name: string, value?: ArrayLike<number>) {
+        if (value !== undefined) {
+            this.crate.fieldsets.fieldset_indices.push(
+                this.crate.fields.setVec3fArray(name, value)
+            )
+        }
+    }
     setVec3d(name: string, value?: ArrayLike<number>) {
         if (value !== undefined) {
             this.crate.fieldsets.fieldset_indices.push(
@@ -360,6 +367,13 @@ export class UsdNode {
         if (value && value.length > 0) {
             this.crate.fieldsets.fieldset_indices.push(
                 this.crate.fields.setTokenVector(name, value)
+            )
+        }
+    }
+    setAssetPath(name: string, value?: string) {
+        if (value) {
+            this.crate.fieldsets.fieldset_indices.push(
+                this.crate.fields.setAssetPath(name, value)
             )
         }
     }

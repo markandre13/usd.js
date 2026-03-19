@@ -149,14 +149,22 @@ export class Mesh extends PointBased implements SkelBindingAPI {
 
     // MaterialBindingAPI: material:binding
     // pxr/usd/usdShade/schema.usda
-    set materialBinding(value: ListOp<UsdNode> | undefined) {
+    set materialBinding(value: ListOp<UsdNode> | string | undefined) {
         this.deleteChild("material:binding")
-        if (value !== undefined) {
-            this.prependApiSchema("MaterialBindingAPI")
-            new Relationship(this, "material:binding", value)
+        if (value === undefined) {
+            return
         }
+        this.prependApiSchema("MaterialBindingAPI")
+        if (typeof value === "string") {
+            new Attribute(this, "material:binding", (node) => {
+                node.setToken("typeName", "asset")
+                node.setAssetPath("default", value)
+            })
+            return
+        }
+        new Relationship(this, "material:binding", value)
     }
-    
+
     //
     // GeomSubset
     //
