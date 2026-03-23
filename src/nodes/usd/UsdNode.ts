@@ -7,6 +7,7 @@ import { JUMP_NEXT_IS_CHILD_JUMP_TO_SIBLING, JUMP_NEXT_IS_CHILD_NO_SIBLINGS, JUM
 import type { Specifier } from "../../crate/Specifier"
 import type { ListOp } from "../../crate/Fields"
 import type { Variability } from "../../crate/Variability"
+import { UserInfo } from "node:os"
 
 // Prim
 //   Attribute (is a property)
@@ -80,13 +81,21 @@ export class UsdNode {
         this.setTokenVector("properties", this.children.filter(it => !isPrim(it.getType())).map(it => it.name))
         this.setTokenVector("primChildren", this.children.filter(it => isPrim(it.getType())).map(it => it.name))
     }
-    deleteChild(name: string) {
+    deleteChild(name: string): void {
         for (let i = 0; i < this.children.length; ++i) {
             if (this.children[i].name === name) {
                 this.children.splice(i, 1)
                 break
             }
         }
+    }
+    findChild(name: string): UsdNode | undefined {
+        for (let i = 0; i < this.children.length; ++i) {
+            if (this.children[i].name === name) {
+                return this.children[i]
+            }
+        }
+        return undefined
     }
     numberOfNodes(): number {
         let n = 1

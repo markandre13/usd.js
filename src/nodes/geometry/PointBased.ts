@@ -3,6 +3,7 @@ import { Vec2fArrayAttr } from "../attributes/Vec2fArrayAttr"
 import { Vec3fArrayAttr } from "../attributes/Vec3fArrayAttr"
 import { VariabilityAttr } from "../attributes/VariabilityAttr"
 import { Gprim } from "./Gprim"
+import { Attribute } from "../attributes/Attribute"
 
 // Cube size
 // Sphere radius
@@ -56,6 +57,17 @@ export class PointBased extends Gprim {
         if (value !== undefined) {
             const attr = new Vec2fArrayAttr(this.crate, this, "primvars:st", value, "texCoord2f[]")
             attr.interpolation = "faceVarying"
+        }
+    }
+    set texIndices(value: ArrayLike<number> | undefined) {
+        this.deleteChild("primvars:st:indices")
+        if (value !== undefined) {
+            new Attribute(this, "primvars:st:indices", (node) => {
+                node.setToken("typeName", "int[]")
+                node.setIntArray("default", value)
+            })
+            // const attr = new Vec2fArrayAttr(this.crate, this, "primvars:st:indices", value, "texCoord2f[]")
+            // attr.interpolation = "faceVarying"
         }
     }
     interpolateBoundary: InterpolateBoundary = "edgeAndCorner";

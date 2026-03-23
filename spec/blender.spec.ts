@@ -16,17 +16,16 @@ import { stringify } from "./stringify"
 import { IntArrayAttr } from "../src/nodes/attributes/IntArrayAttr"
 import { VariabilityAttr } from "../src/nodes/attributes/VariabilityAttr"
 import { Relationship } from "../src/nodes/attributes/Relationship"
-import { makePrincipledBSDF } from "../src/nodes/shader/blender/PrincipledBSDF"
+import { ImageTexture } from "../src/nodes/shader/blender/ImageTexture"
+import { makePrincipledBSDF, PrincipledBSDF } from "../src/nodes/shader/blender/PrincipledBSDF"
+import { UVMap } from "../src/nodes/shader/blender/UVMap"
 import { Crate } from "../src/crate/Crate"
 import { Attribute } from "../src/nodes/attributes/Attribute"
 import { Material } from "../src/nodes/shader/Material"
 import { Shader } from "../src/nodes/shader/Shader"
 import { TokenAttr } from "../src/nodes/attributes/TokenAttr"
-import { FloatAttr } from "../src/nodes/attributes/FloatAttr"
-import { Color3fAttr } from "../src/nodes/attributes/Color3fAttr"
 import { AssetPathAttr } from "../src/nodes/attributes/AssetPathAttr"
-import { StringAttr } from "../src/nodes/attributes/StringAttr"
-import { CrateDataType } from "../src/crate/CrateDataType"
+import { UsdNode } from "../src/nodes/usd/UsdNode"
 
 /**
  * re-create files generated with blender 5.0
@@ -356,21 +355,29 @@ describe("re-create blender 5.0 files", () => {
 
         const materials = new Scope(root, "_materials")
 
+        // material definition with three nodes, connected as follows:
+        //
+        // Material        principledBSDF          imageTexture    uvmap
+        // outputs:surface outputs:surface
+        //                 inputs:diffuseColor     outputs:rgb
+        //                                         inputs:st       outputs:result
         const material = new Material(materials, "Material")
+        // material outputs:surface <- Principled BSDF outputs:surface
         new Attribute(material, "outputs:surface", (node) => {
             node.setToken("typeName", "token")
             node.setPathListOp("connectionPaths", {
                 isExplicit: true,
-                explicit: [surface]
+                explicit: [principledBSDFOutput]
             })
         })
         material.blenderDataName = "Material"
 
-
-        const imageTexture = new Shader(material, "Image_Texture")
-        new TokenAttr(imageTexture, "info:id", Variability.Uniform, "UsdUVTexture")
-        new AssetPathAttr(imageTexture, "inputs:file", "./textures/cubetexture.png")
-        new TokenAttr(imageTexture, "inputs:sourceColorSpace", undefined, "sRGB")
+        // Sample an Image file as a texture
+        const imageTexture = new ImageTexture(material, "Image_Texture")
+        imageTexture.infoId = "UsdUVTexture"
+        imageTexture.file = "./textures/cubetexture.png"
+        imageTexture.sourceColorSpace = "sRGB"
+        // imageTexture.uvCoords = uvmapOutputsRGB
         new Attribute(imageTexture, "inputs:st", (node) => {
             node.setToken("typeName", "float2")
             node.setPathListOp("connectionPaths", {
@@ -378,39 +385,26 @@ describe("re-create blender 5.0 files", () => {
                 explicit: [uvmapOutputsRGB]
             })
         })
-        new TokenAttr(imageTexture, "inputs:wrapS", undefined, "repeat") 
-        new TokenAttr(imageTexture, "inputs:wrapT", undefined, "repeat")
-        const imageTextureOutputsRGB = new Attribute(imageTexture, "outputs:rgb", node => {
-            node.setToken("typeName", "float3")
-        })
+        imageTexture.wrapS = "repeat"
+        imageTexture.wrapT = "repeat"
+        const imageTextureOutputsRGB = imageTexture.outputsRGB
 
+        const principledBSDF = new PrincipledBSDF(material, "Principled_BSDF")
+        principledBSDF.infoId = "UsdPreviewSurface"
+        principledBSDF.clearcoat = 0
+        principledBSDF.clearcoatRoughness = 0.029999999329447746
+        principledBSDF.diffuseColor = imageTextureOutputsRGB
+        principledBSDF.ior = 1.5
+        principledBSDF.metallic = 0
+        principledBSDF.opacity = 1
+        principledBSDF.roughness = 0.5
+        principledBSDF.specular = 0.5
+        const principledBSDFOutput = principledBSDF.outputsSurface
 
-        const shader = new Shader(material, "Principled_BSDF")
-        new TokenAttr(shader, "info:id", Variability.Uniform, "UsdPreviewSurface")
-        new FloatAttr(shader, "inputs:clearcoat", 0)
-        new FloatAttr(shader, "inputs:clearcoatRoughness", 0.029999999329447746)
-
-        new Attribute(shader, "inputs:diffuseColor", node => {
-            node.setToken("typeName", "color3f")
-            node.setPathListOp("connectionPaths", {
-                isExplicit: true,
-                explicit: [imageTextureOutputsRGB]
-            })
-        })
-
-        new FloatAttr(shader, "inputs:ior", 1.5)
-        new FloatAttr(shader, "inputs:metallic", 0)
-        new FloatAttr(shader, "inputs:opacity", 1)
-        new FloatAttr(shader, "inputs:roughness", 0.5)
-        new FloatAttr(shader, "inputs:specular", 0.5)
-        const surface = new TokenAttr(shader, "outputs:surface")
-
-        const uvmap = new Shader(material, "uvmap")
-        new TokenAttr(uvmap, "info:id", Variability.Uniform, "UsdPrimvarReader_float2")
-        new StringAttr(uvmap, "inputs:varname", "st")
-        const uvmapOutputsRGB = new Attribute(uvmap, "outputs:result", node => {
-            node.setToken("typeName", "float2")
-        })
+        const uvmap = new UVMap(material, "uvmap")
+        uvmap.infoId = "UsdPrimvarReader_float2"
+        uvmap.inputsVarname = "st"
+        const uvmapOutputsRGB = uvmap.outputsResult
 
         //
         // MESH
@@ -423,14 +417,11 @@ describe("re-create blender 5.0 files", () => {
             isExplicit: true,
             explicit: [material]
         }
-        mesh.normals = [ 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 ]
+        mesh.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]
         mesh.points = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1]
 
         mesh.texCoords = [0.7864828109741211, 0.4631108343601227, 0.4918825626373291, 0.4691932797431946, 0.7865025401115417, 0.9903982281684875, 0.48568177223205566, 0.9935183525085449, 0.9886826276779175, 0.4633080065250397, 0.7865025401115417, 0.2423480898141861, 0.00009958772716345266, 0.4661126136779785, 0.48337018489837646, 0.23920826613903046, 0.9917830228805542, 0.9935380220413208, 0.7865025401115417, 0.9999004602432251, 0.7865025401115417, 0.00009955812129192054, 0.4887821674346924, 0.9999595880508423, 0.4864705801010132, -0.009201617911458015, 0.0006620592903345823, 1.0013625621795654]
-        new Attribute(mesh, "primvars:st:indices", (node) => {
-            node.setToken("typeName", "int[]")
-            node.setIntArray("default", [0, 4, 8, 2, 3, 2, 9, 11, 12, 10, 5, 7, 6, 1, 3, 13, 1, 0, 2, 3, 7, 5, 0, 1])
-        })
+        mesh.texIndices = [0, 4, 8, 2, 3, 2, 9, 11, 12, 10, 5, 7, 6, 1, 3, 13, 1, 0, 2, 3, 7, 5, 0, 1]
 
         mesh.subdivisionScheme = "none"
         mesh.blenderDataName = "Cube"
