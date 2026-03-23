@@ -362,49 +362,32 @@ describe("re-create blender 5.0 files", () => {
         //                 inputs:diffuseColor     outputs:rgb
         //                                         inputs:st       outputs:result
         const material = new Material(materials, "Material")
-        // material outputs:surface <- Principled BSDF outputs:surface
-        new Attribute(material, "outputs:surface", (node) => {
-            node.setToken("typeName", "token")
-            node.setPathListOp("connectionPaths", {
-                isExplicit: true,
-                explicit: [principledBSDFOutput]
-            })
-        })
         material.blenderDataName = "Material"
 
-        // Sample an Image file as a texture
+        const uvmap = new UVMap(material, "uvmap")
+        uvmap.infoId = "UsdPrimvarReader_float2"
+        uvmap.inputsVarname = "st"
+
         const imageTexture = new ImageTexture(material, "Image_Texture")
         imageTexture.infoId = "UsdUVTexture"
         imageTexture.file = "./textures/cubetexture.png"
         imageTexture.sourceColorSpace = "sRGB"
-        // imageTexture.uvCoords = uvmapOutputsRGB
-        new Attribute(imageTexture, "inputs:st", (node) => {
-            node.setToken("typeName", "float2")
-            node.setPathListOp("connectionPaths", {
-                isExplicit: true,
-                explicit: [uvmapOutputsRGB]
-            })
-        })
+        imageTexture.uvCoords = uvmap.outputsResult
         imageTexture.wrapS = "repeat"
         imageTexture.wrapT = "repeat"
-        const imageTextureOutputsRGB = imageTexture.outputsRGB
 
         const principledBSDF = new PrincipledBSDF(material, "Principled_BSDF")
         principledBSDF.infoId = "UsdPreviewSurface"
         principledBSDF.clearcoat = 0
-        principledBSDF.clearcoatRoughness = 0.029999999329447746
-        principledBSDF.diffuseColor = imageTextureOutputsRGB
+        principledBSDF.clearcoatRoughness = 0.03
+        principledBSDF.diffuseColor = imageTexture.outputsRGB
         principledBSDF.ior = 1.5
         principledBSDF.metallic = 0
         principledBSDF.opacity = 1
         principledBSDF.roughness = 0.5
         principledBSDF.specular = 0.5
-        const principledBSDFOutput = principledBSDF.outputsSurface
 
-        const uvmap = new UVMap(material, "uvmap")
-        uvmap.infoId = "UsdPrimvarReader_float2"
-        uvmap.inputsVarname = "st"
-        const uvmapOutputsRGB = uvmap.outputsResult
+        material.surface = principledBSDF.outputsSurface
 
         //
         // MESH

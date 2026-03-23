@@ -506,8 +506,8 @@
                                     "array": false,
                                     "compressed": false,
                                     "value": [
-                                        "outputs:surface",
-                                        "userProperties:blender:data_name"
+                                        "userProperties:blender:data_name",
+                                        "outputs:surface"
                                     ]
                                 },
                                 "primChildren": {
@@ -516,9 +516,9 @@
                                     "array": false,
                                     "compressed": false,
                                     "value": [
+                                        "uvmap",
                                         "Image_Texture",
-                                        "Principled_BSDF",
-                                        "uvmap"
+                                        "Principled_BSDF"
                                     ]
                                 },
                                 "specifier": {
@@ -537,32 +537,6 @@
                                 }
                             },
                             "children": [
-                                {
-                                    "type": "Attribute",
-                                    "name": "outputs:surface",
-                                    "prim": false,
-                                    "fields": {
-                                        "typeName": {
-                                            "type": "Token",
-                                            "inline": true,
-                                            "array": false,
-                                            "compressed": false,
-                                            "value": "token"
-                                        },
-                                        "connectionPaths": {
-                                            "type": "PathListOp",
-                                            "inline": false,
-                                            "array": false,
-                                            "compressed": false,
-                                            "value": {
-                                                "isExplicit": true,
-                                                "explicit": [
-                                                    "/root/_materials/Material/Principled_BSDF/outputs:surface"
-                                                ]
-                                            }
-                                        }
-                                    }
-                                },
                                 {
                                     "type": "Attribute",
                                     "name": "userProperties:blender:data_name",
@@ -590,6 +564,103 @@
                                             "value": "Material"
                                         }
                                     }
+                                },
+                                {
+                                    "type": "Prim",
+                                    "name": "uvmap",
+                                    "prim": true,
+                                    "fields": {
+                                        "properties": {
+                                            "type": "TokenVector",
+                                            "inline": false,
+                                            "array": false,
+                                            "compressed": false,
+                                            "value": [
+                                                "info:id",
+                                                "inputs:varname",
+                                                "outputs:result"
+                                            ]
+                                        },
+                                        "specifier": {
+                                            "type": "Specifier",
+                                            "inline": true,
+                                            "array": false,
+                                            "compressed": false,
+                                            "value": "Def"
+                                        },
+                                        "typeName": {
+                                            "type": "Token",
+                                            "inline": true,
+                                            "array": false,
+                                            "compressed": false,
+                                            "value": "Shader"
+                                        }
+                                    },
+                                    "children": [
+                                        {
+                                            "type": "Attribute",
+                                            "name": "info:id",
+                                            "prim": false,
+                                            "fields": {
+                                                "typeName": {
+                                                    "type": "Token",
+                                                    "inline": true,
+                                                    "array": false,
+                                                    "compressed": false,
+                                                    "value": "token"
+                                                },
+                                                "variability": {
+                                                    "type": "Variability",
+                                                    "inline": true,
+                                                    "array": false,
+                                                    "compressed": false,
+                                                    "value": "Uniform"
+                                                },
+                                                "default": {
+                                                    "type": "Token",
+                                                    "inline": true,
+                                                    "array": false,
+                                                    "compressed": false,
+                                                    "value": "UsdPrimvarReader_float2"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "Attribute",
+                                            "name": "inputs:varname",
+                                            "prim": false,
+                                            "fields": {
+                                                "typeName": {
+                                                    "type": "Token",
+                                                    "inline": true,
+                                                    "array": false,
+                                                    "compressed": false,
+                                                    "value": "string"
+                                                },
+                                                "default": {
+                                                    "type": "String",
+                                                    "inline": true,
+                                                    "array": false,
+                                                    "compressed": false,
+                                                    "value": "st"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "Attribute",
+                                            "name": "outputs:result",
+                                            "prim": false,
+                                            "fields": {
+                                                "typeName": {
+                                                    "type": "Token",
+                                                    "inline": true,
+                                                    "array": false,
+                                                    "compressed": false,
+                                                    "value": "float2"
+                                                }
+                                            }
+                                        }
+                                    ]
                                 },
                                 {
                                     "type": "Prim",
@@ -1038,101 +1109,30 @@
                                     ]
                                 },
                                 {
-                                    "type": "Prim",
-                                    "name": "uvmap",
-                                    "prim": true,
+                                    "type": "Attribute",
+                                    "name": "outputs:surface",
+                                    "prim": false,
                                     "fields": {
-                                        "properties": {
-                                            "type": "TokenVector",
-                                            "inline": false,
-                                            "array": false,
-                                            "compressed": false,
-                                            "value": [
-                                                "info:id",
-                                                "inputs:varname",
-                                                "outputs:result"
-                                            ]
-                                        },
-                                        "specifier": {
-                                            "type": "Specifier",
-                                            "inline": true,
-                                            "array": false,
-                                            "compressed": false,
-                                            "value": "Def"
-                                        },
                                         "typeName": {
                                             "type": "Token",
                                             "inline": true,
                                             "array": false,
                                             "compressed": false,
-                                            "value": "Shader"
-                                        }
-                                    },
-                                    "children": [
-                                        {
-                                            "type": "Attribute",
-                                            "name": "info:id",
-                                            "prim": false,
-                                            "fields": {
-                                                "typeName": {
-                                                    "type": "Token",
-                                                    "inline": true,
-                                                    "array": false,
-                                                    "compressed": false,
-                                                    "value": "token"
-                                                },
-                                                "variability": {
-                                                    "type": "Variability",
-                                                    "inline": true,
-                                                    "array": false,
-                                                    "compressed": false,
-                                                    "value": "Uniform"
-                                                },
-                                                "default": {
-                                                    "type": "Token",
-                                                    "inline": true,
-                                                    "array": false,
-                                                    "compressed": false,
-                                                    "value": "UsdPrimvarReader_float2"
-                                                }
-                                            }
+                                            "value": "token"
                                         },
-                                        {
-                                            "type": "Attribute",
-                                            "name": "inputs:varname",
-                                            "prim": false,
-                                            "fields": {
-                                                "typeName": {
-                                                    "type": "Token",
-                                                    "inline": true,
-                                                    "array": false,
-                                                    "compressed": false,
-                                                    "value": "string"
-                                                },
-                                                "default": {
-                                                    "type": "String",
-                                                    "inline": true,
-                                                    "array": false,
-                                                    "compressed": false,
-                                                    "value": "st"
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "type": "Attribute",
-                                            "name": "outputs:result",
-                                            "prim": false,
-                                            "fields": {
-                                                "typeName": {
-                                                    "type": "Token",
-                                                    "inline": true,
-                                                    "array": false,
-                                                    "compressed": false,
-                                                    "value": "float2"
-                                                }
+                                        "connectionPaths": {
+                                            "type": "PathListOp",
+                                            "inline": false,
+                                            "array": false,
+                                            "compressed": false,
+                                            "value": {
+                                                "isExplicit": true,
+                                                "explicit": [
+                                                    "/root/_materials/Material/Principled_BSDF/outputs:surface"
+                                                ]
                                             }
                                         }
-                                    ]
+                                    }
                                 }
                             ]
                         }

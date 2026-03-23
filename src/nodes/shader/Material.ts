@@ -3,6 +3,7 @@ import { SpecType } from "../../crate/SpecType"
 import type { UsdNode } from "../usd/UsdNode"
 import { StringAttr } from "../attributes/StringAttr"
 import { NodeGraph } from "./NodeGraph"
+import { Attribute } from "../attributes/Attribute"
 
 /**
  * A Material provides a container into which multiple "render contexts"
@@ -17,10 +18,22 @@ export class Material extends NodeGraph {
         this.specifier = Specifier.Def
         this.typeName = "Material"
     }
+    set surface(value: UsdNode | undefined) {
+        this.deleteChild("outputs:surface")
+        if (value !== undefined) {
+            new Attribute(this, "outputs:surface", (node) => {
+                node.setToken("typeName", "token")
+                node.setPathListOp("connectionPaths", {
+                    isExplicit: true,
+                    explicit: [value]
+                })
+            })
+        }
+    }
     set blenderDataName(value: string | undefined) {
         this.deleteChild("userProperties:blender:data_name")
         if (value !== undefined) {
-            new StringAttr(this, "userProperties:blender:data_name", value, {custom: true})
+            new StringAttr(this, "userProperties:blender:data_name", value, { custom: true })
         }
     }
 }
