@@ -927,6 +927,29 @@ describe("USD", () => {
 
             expect(specsIn).to.deep.equal(specsOut)
         })
+        it("proper use of this.specs.pathIndexes when copying crate.specs to crate.paths._nodes[]", () => {
+            const prefix = "spec/examples/cube-textured"
+            const buffer = readFileSync(`${prefix}.usdc`)
+            const stage = new Stage(buffer)
+            const crate = stage._crate
+
+            const imageTexture = stage.getPrimAtPath("/root/_materials/Material/Image_Texture")
+
+            // uniform token info:id = "UsdUVTexture"
+            const infoId = imageTexture.getAttribute("info:id")
+            const infoIdDefault = infoId?.getField("default")
+            expect(infoIdDefault?.getValue(crate)).to.equal("UsdUVTexture")
+
+            // inputs:wrapS
+            const wrapS = imageTexture.getAttribute("inputs:wrapS")
+            const wrapSDefault = wrapS?.getField("default")
+            expect(wrapSDefault?.getValue(crate)).to.equal("repeat")
+
+            // inputs:wrapT
+            const wrapT = imageTexture.getAttribute("inputs:wrapT")
+            const wrapTDefault = wrapT?.getField("default")
+            expect(wrapTDefault?.getValue(crate)).to.equal("repeat")
+        })
     })
     describe("Reader & Writer", () => {
         it("grows on demand", () => {

@@ -34,6 +34,8 @@ export class Crate {
     reader!: Reader
     writer!: Writer
 
+    root?: UsdNode
+
     constructor(reader?: Reader) {
         if (reader) {
             this.reader = reader
@@ -72,10 +74,14 @@ export class Crate {
                 jumps: this.paths.jumps,
                 depth: 0
             })
-            // console.log(`XXX: this.paths._nodes.length=${this.paths._nodes.length}, this.specs.pathIndexes.length=${this.specs.pathIndexes.length}, this.specs.fieldsetIndexes.length=${this.specs.fieldsetIndexes.length}, this.specs.specTypeIndexes.length=${this.specs.specTypeIndexes.length}`)
-            // move this into buildNodeTree so that we can directly instantiate classes like Xform, Mesh, ...
+            this.root = node
+
+            //
+            // copy this.specs into this.paths._nodes[]
+            //
             for (let i = 0; i < this.specs.pathIndexes.length; ++i) {
-                if (this.paths._nodes[i] === undefined) {
+                const idx = this.specs.pathIndexes[i]
+                if (this.paths._nodes[idx] === undefined) {
                     for (let j = 0; j < this.paths._nodes.length; ++j) {
                         if (this.paths._nodes[j] === undefined) {
                             console.log(`this.paths._nodes[${j}] === undefined`)
@@ -83,9 +89,8 @@ export class Crate {
                     }
                     throw Error("yikes: Crate(reader): some paths._nodes[...] are undefined")
                 }
-                const idx = this.specs.pathIndexes[i]
-                this.paths._nodes[i].fieldset_index = this.specs.fieldsetIndexes[idx]
-                this.paths._nodes[i].spec_type = this.specs.specTypeIndexes[idx]
+                this.paths._nodes[idx].fieldset_index = this.specs.fieldsetIndexes[i]
+                this.paths._nodes[idx].spec_type = this.specs.specTypeIndexes[i]
             }
         } else {
             this.writer = new Writer(undefined, "data    ")
@@ -230,6 +235,24 @@ export class Crate {
             }
         }
         return root
+    }
+
+    printTree(node: UsdNode | undefined = this.root, depth = 0) {
+        if (node === undefined) {
+            return
+        }
+        let fields: number[] = []
+        for(let i = node.fieldset_index!; this.fieldsets.fieldset_indices[i] > 0; ++i) {
+            fields.push(this.fieldsets.fieldset_indices[i])
+        }
+        console.log(`${"  ".repeat(depth)}[${node.index}] ${node.name} fieldSetIndex=${node.fieldset_index}, fields=[${fields.join(", ")}]`)
+        for(const field of fields) {
+            const f = this.fields.fields![field]
+            console.log(`${"  ".repeat(depth)}  ${f.toString(this.tokens.tokens, this)}`)
+        }
+        for(const child of node.children) {
+            this.printTree(child, depth + 1)
+        }
     }
 
     print() {

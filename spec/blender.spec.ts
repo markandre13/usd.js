@@ -325,16 +325,16 @@ describe("re-create blender 5.0 files", () => {
     it("cube-textured.usdc", () => {
         const prefix = "spec/examples/cube-textured"
         // read the original
-        const buffer = readFileSync(`${prefix}.usdc`)
-        const stageIn = new Stage(buffer)
-        const origPseudoRoot = stageIn.getPrimAtPath("/")!
-        const orig = origPseudoRoot.toJSON()
+        // const buffer = readFileSync(`${prefix}.usdc`)
+        // const stageIn = new Stage(buffer)
+        // const origPseudoRoot = stageIn.getPrimAtPath("/")!
+        // const orig = origPseudoRoot.toJSON()
         // console.log(JSON.stringify(orig, undefined, 4))
         // writeFileSync(`${prefix}.json`, stringify(orig, {indent: 4}))
-       
+
         // read an adjusted, good enough variant of the original's JSON
-        // const buffer = readFileSync(`${prefix}.json`)
-        // const orig = JSON.parse(buffer.toString())
+        const buffer = readFileSync(`${prefix}.json`)
+        const orig = JSON.parse(buffer.toString())
 
         const crate = new Crate()
 
@@ -354,7 +354,7 @@ describe("re-create blender 5.0 files", () => {
 
         const mesh = new Mesh(meshParent, "Cube")
 
-            const materials = new Scope(root, "_materials")
+        const materials = new Scope(root, "_materials")
 
         const material = new Material(materials, "Material")
         new Attribute(material, "outputs:surface", (node) => {
@@ -366,85 +366,64 @@ describe("re-create blender 5.0 files", () => {
         })
         material.blenderDataName = "Material"
 
+
         const imageTexture = new Shader(material, "Image_Texture")
-        // uniform token info:id = "UsdUVTexture"
         new TokenAttr(imageTexture, "info:id", Variability.Uniform, "UsdUVTexture")
-
-        // FIXME: attributes after this one are decoded wrong when reading the original
-        // write regression test for reader!!!
-
-        // asset inputs:file = @./textures/cubetexture.png@
-        new FloatAttr(imageTexture, "inputs:file", 1.5)
-        // token inputs:sourceColorSpace = "sRGB"
-        new Attribute(imageTexture, "inputs:sourceColorSpace", (node) => {
+        new AssetPathAttr(imageTexture, "inputs:file", "./textures/cubetexture.png")
+        new TokenAttr(imageTexture, "inputs:sourceColorSpace", undefined, "sRGB")
+        new Attribute(imageTexture, "inputs:st", (node) => {
             node.setToken("typeName", "float2")
             node.setPathListOp("connectionPaths", {
                 isExplicit: true,
                 explicit: [uvmapOutputsRGB]
             })
         })
-        // texCoord2f inputs:st.connect = </root/_materials/Material/uvmap.outputs:result>
-        new TokenAttr(imageTexture, "inputs:st", undefined, "repeat")
-        // token inputs:wrapS = "repeat"
-        new Attribute(imageTexture, "inputs:wrapS", (node) => {
-            node.setToken("typeName", "float2")
-            // TODO: value
-        })
-        // token inputs:wrapT = "repeat"
-        new Attribute(imageTexture, "inputs:wrapT", (node) => {
+        new TokenAttr(imageTexture, "inputs:wrapS", undefined, "repeat") 
+        new TokenAttr(imageTexture, "inputs:wrapT", undefined, "repeat")
+        const imageTextureOutputsRGB = new Attribute(imageTexture, "outputs:rgb", node => {
             node.setToken("typeName", "float3")
-            // TODO: value
         })
-        const imageTextureOutputsRGB = new AssetPathAttr(imageTexture, "outputs:rgb", "./textures/cubetexture.png")
+
 
         const shader = new Shader(material, "Principled_BSDF")
         new TokenAttr(shader, "info:id", Variability.Uniform, "UsdPreviewSurface")
         new FloatAttr(shader, "inputs:clearcoat", 0)
         new FloatAttr(shader, "inputs:clearcoatRoughness", 0.029999999329447746)
 
-        // new Color3fAttr(shader, "inputs:diffuseColor", [1,1,1]) // float 1
-        new FloatAttr(shader, "inputs:diffuseColor", 1)
+        new Attribute(shader, "inputs:diffuseColor", node => {
+            node.setToken("typeName", "color3f")
+            node.setPathListOp("connectionPaths", {
+                isExplicit: true,
+                explicit: [imageTextureOutputsRGB]
+            })
+        })
 
-        new FloatAttr(shader, "inputs:ior", 1)
-        new FloatAttr(shader, "inputs:metallic", 0.5)
-
-        // new FloatAttr(shader, "inputs:opacity", 1) // token: sRGB
-        new TokenAttr(shader, "inputs:opacity", undefined, "sRGB") // token: sRGB
-
+        new FloatAttr(shader, "inputs:ior", 1.5)
+        new FloatAttr(shader, "inputs:metallic", 0)
+        new FloatAttr(shader, "inputs:opacity", 1)
         new FloatAttr(shader, "inputs:roughness", 0.5)
-
-        // new FloatAttr(shader, "inputs:specular", 0.5) // string st
-        new StringAttr(shader, "inputs:specular", "st")
-
+        new FloatAttr(shader, "inputs:specular", 0.5)
         const surface = new TokenAttr(shader, "outputs:surface")
 
         const uvmap = new Shader(material, "uvmap")
-        // uniform token info:id = "UsdPrimvarReader_float2"
         new TokenAttr(uvmap, "info:id", Variability.Uniform, "UsdPrimvarReader_float2")
-        // string inputs:varname = "st"
-        new Attribute(uvmap, "inputs:varname", node => {
-            node.setToken("typeName", "normal3f[]")
-            node.setVec3fArray("default", [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0])
-            node.setToken("interpolation", "faceVarying")
+        new StringAttr(uvmap, "inputs:varname", "st")
+        const uvmapOutputsRGB = new Attribute(uvmap, "outputs:result", node => {
+            node.setToken("typeName", "float2")
         })
-        // float2 outputs:result
-        const uvmapOutputsRGB = new TokenAttr(uvmap, "outputs:result", undefined, "repeat")
 
-        // makePrincipledBSDF(material, "Principled_BSDF", [1,2,3])
-
+        //
+        // MESH
+        //
         mesh.doubleSided = true
         mesh.extent = [-1, -1, -1, 1, 1, 1]
         mesh.faceVertexCounts = [4, 4, 4, 4, 4, 4]
         mesh.faceVertexIndices = [0, 4, 6, 2, 3, 2, 6, 7, 7, 6, 4, 5, 5, 1, 3, 7, 1, 0, 2, 3, 5, 4, 0, 1]
-        mesh.materialBinding = "./textures/color_0C0C0C.exr"
-        // mesh.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0]
-        new Attribute(mesh, "normals", (node) => {
-            node.setToken("typeName", "color3f")
-            node.setPathListOp("connectionPaths", {
-                isExplicit: true,
-                explicit: [imageTextureOutputsRGB] // /root/_materials/Material/Image_...
-            })
-        })
+        mesh.materialBinding = {
+            isExplicit: true,
+            explicit: [material]
+        }
+        mesh.normals = [ 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0 ]
         mesh.points = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1]
 
         mesh.texCoords = [0.7864828109741211, 0.4631108343601227, 0.4918825626373291, 0.4691932797431946, 0.7865025401115417, 0.9903982281684875, 0.48568177223205566, 0.9935183525085449, 0.9886826276779175, 0.4633080065250397, 0.7865025401115417, 0.2423480898141861, 0.00009958772716345266, 0.4661126136779785, 0.48337018489837646, 0.23920826613903046, 0.9917830228805542, 0.9935380220413208, 0.7865025401115417, 0.9999004602432251, 0.7865025401115417, 0.00009955812129192054, 0.4887821674346924, 0.9999595880508423, 0.4864705801010132, -0.009201617911458015, 0.0006620592903345823, 1.0013625621795654]
@@ -457,12 +436,8 @@ describe("re-create blender 5.0 files", () => {
         mesh.blenderDataName = "Cube"
 
         const domeLight = new DomeLight(root, "env_light")
-        domeLight.intensity = 0
-        // domeLight.textureFile = "./textures/color_0C0C0C.exr"
-        new Relationship(domeLight, "inputs:texture:file", {
-            isExplicit: true,
-            explicit: [material]
-        })
+        domeLight.intensity = 1
+        domeLight.textureFile = "./textures/color_0C0C0C.exr"
 
         // serialize everything into crate.writer
         crate.serialize(pseudoRoot)
@@ -483,76 +458,6 @@ describe("re-create blender 5.0 files", () => {
         writeFileSync(`${filename}-generated.json`, stringify(pseudoRootIn, { indent: 4 }))
 
         compare(pseudoRootIn, orig)
-    })
-    it.only("regression read", () => {
-        const prefix = "spec/examples/cube-textured"
-        const buffer = readFileSync(`${prefix}.usdc`)
-        const stage = new Stage(buffer)
-        const crate = stage._crate
-
-        const pseudoRoot = stage.getPrimAtPath("/")!
-        const orig = pseudoRoot.toJSON()
-        writeFileSync(`debug.json`, stringify(orig, {indent: 4}))
-
-        // fieldsets are correct...
-        expect(stage._crate.fieldsets.fieldset_indices).to.deep.equal([0,1,2,3,4,-1,5,6,7,8,-1,5,6,9,10,-1,5,11,12,13,14,-1,5,15,16,-1,5,17,18,19,-1,5,20,21,-1,5,20,22,-1,5,20,23,-1,5,24,25,-1,26,27,28,-1,29,30,-1,31,32,-1,31,33,-1,34,27,35,-1,34,27,36,-1,34,27,37,-1,38,39,-1,38,40,-1,41,42,-1,43,44,-1,38,45,-1,38,46,-1,38,47,-1,34,48,-1,49,50,-1,43,51,-1,52,53,-1,34,54,-1,27,55,-1,56,57,58,-1,49,-1,59,-1,34,60,-1,34,-1,61,62,-1,63,58,64,-1,31,65,-1,34,27,66,-1,67,52,68,-1,67,52,69,-1])
-        // all decoded integers are correct
-
-        // def Shader "Principled_BSDF"
-        // {
-        //     uniform token info:id = "UsdPreviewSurface"
-        //     FIXME: decoded as Float 1
-        //     color3f inputs:diffuseColor.connect = </root/_materials/Material/Image_Texture.outputs:rgb>
-        //     float inputs:ior = 1.5
-        //     float inputs:metallic = 0
-        //     float inputs:clearcoat = 0
-        //     float inputs:clearcoatRoughness = 0.03
-        //     float inputs:roughness = 0.5
-        //     FIXME: decoded as "sRGB"
-        //     float inputs:opacity = 1
-        //     token outputs:surface
-        //     float inputs:specular = 0.5
-        // }
-
-        // def Shader "Image_Texture"
-        // {
-        //     uniform token info:id = "UsdUVTexture"
-        //     asset inputs:file = @./textures/cubetexture.png@
-        //     token inputs:sourceColorSpace = "sRGB"
-        //     texCoord2f inputs:st.connect = </root/_materials/Material/uvmap.outputs:result>
-        //     token inputs:wrapT = "repeat"
-        //     token inputs:wrapS = "repeat"
-        //     float3 outputs:rgb
-        // }
-
-        const imageTexture = stage.getPrimAtPath("/root/_materials/Material/Image_Texture")
-
-        // uniform token info:id = "UsdUVTexture"
-        const infoId = imageTexture.getAttribute("info:id")
-        const infoIdDefault = infoId?.getField("default")
-        expect(infoIdDefault?.getValue(crate)).to.equal("UsdUVTexture")
-
-        // asset inputs:file = @./textures/cubetexture.png@
-        // const file = bug.getAttribute("inputs:file")
-        // console.log(file?.toJSON())
-
-        // token inputs:sourceColorSpace = "sRGB"
-        const sourceColorSpace = imageTexture.getAttribute("inputs:sourceColorSpace")
-        // console.log(sourceColorSpace?.toJSON())
-        const tn = sourceColorSpace?.getField("typeName")!
-        console.log(tn?.toString())
-        const fieldOffset = (tn as any)._offset
-        console.log(`_offset: ${fieldOffset} (${fieldOffset/8})`)
-        expect(tn.getType()).to.equal(CrateDataType.Token)
-        expect(tn.isInlined()).to.be.true
-        expect(tn.isArray()).to.be.false
-        expect(tn.isCompressed()).to.be.false
-        console.log(`index: ${tn.getIndex()}`)
-        console.log(stage._crate.tokens.get(78))
-        console.log(tn.getValue(stage._crate))
-        expect(tn.getValue(stage._crate), "/root/_materials/Material/Image_Textureinputs:sourceColorSpace@typeName").to.equal("token")
-
-        // console.log(JSON.stringify(orig, undefined, 4))
     })
 })
 

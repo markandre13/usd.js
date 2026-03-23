@@ -393,8 +393,11 @@ export class ValueRep {
         }
         return this._buffer.getUint32(this._offset, true)
     }
-    toString(): string {
+    toString(crate?: Crate): string {
+        if (crate === undefined) {
         return `type: ${GetCrateDataType(this.getType()!)} (${this.getType()}), isArray: ${this.isArray()}, isInlined: ${this.isInlined()}, isCompressed:${this.isCompressed()}, payload: ${this.getPayload()}`
+        }
+        return `type: ${GetCrateDataType(this.getType()!)} (${this.getType()}), isArray: ${this.isArray()}, isInlined: ${this.isInlined()}, isCompressed:${this.isCompressed()}, value: ${JSON.stringify(this.getValue(crate))}`
     }
 }
 
