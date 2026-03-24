@@ -21,12 +21,12 @@ import { BlendShape } from "../src/nodes/skeleton/BlendShape"
 import { SkelAnimation } from "../src/nodes/skeleton/SkelAnimation"
 
 /**
- * re-create files generated with blender 5.0
+ * re-create USDC files generated with blender 5.x
  * features covered are those needed by makehuman.js
  * 
  * during development i compared json files with these commands:
- *   diff -y --color=always -W 180 spec/examples/cube-colored-faces.json constructed.json | less -r
- *   diff -u --color=always -W 180 spec/examples/cube-colored-faces.json constructed.json | less -r
+ * - diff -y --color=always -W 180 spec/examples/cube-colored-faces.json constructed.json | less -r
+ * - diff -u --color=always -W 180 spec/examples/cube-colored-faces.json constructed.json | less -r
  */
 describe("re-create blender 5.0 files", () => {
     it("cube-flat-faces.usdc", () => {

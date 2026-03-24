@@ -1,7 +1,7 @@
 import { Specifier } from "../../crate/Specifier"
 import { SpecType } from "../../crate/SpecType"
 import { Variability } from "../../crate/Variability"
-import { FloatAttr } from "../attributes/FloatAttr"
+import { FloatArrayAttr } from "../attributes/FloatArrayAttr"
 import { TokenAttr } from "../attributes/TokenAttr"
 import { Typed } from "../usd/Typed"
 import { UsdNode } from "../usd/UsdNode"
@@ -47,7 +47,7 @@ export class SkelAnimation extends Typed {
     set blendShapeWeights(values: ArrayLike<number> | undefined) {
         this.deleteChild("blendShapeWeights")
         if (values !== undefined) {
-            new FloatAttr(this, "blendShapeWeights", values)
+            new FloatArrayAttr(this, "blendShapeWeights", values)
         }
     }
 }
