@@ -10,18 +10,13 @@ import { Skeleton } from "../src/nodes/skeleton/Skeleton"
 import { SkelRoot } from "../src/nodes/skeleton/SkelRoot"
 import { Xform } from "../src/nodes/geometry/Xform"
 import { PseudoRoot } from "../src/nodes/usd/PseudoRoot"
-import { Variability } from "../src/crate/Variability"
 import { stringify } from "./stringify"
-import { IntArrayAttr } from "../src/nodes/attributes/IntArrayAttr"
-import { VariabilityAttr } from "../src/nodes/attributes/VariabilityAttr"
-import { Relationship } from "../src/nodes/attributes/Relationship"
 import { ImageTexture } from "../src/nodes/shader/blender/ImageTexture"
 import { PrincipledBSDF } from "../src/nodes/shader/blender/PrincipledBSDF"
 import { UVMap } from "../src/nodes/shader/blender/UVMap"
 import { Crate } from "../src/crate/Crate"
 import { Attribute } from "../src/nodes/attributes/Attribute"
 import { Material } from "../src/nodes/shader/Material"
-import { TokenAttr } from "../src/nodes/attributes/TokenAttr"
 import { BlendShape } from "../src/nodes/skeleton/BlendShape"
 import { SkelAnimation } from "../src/nodes/skeleton/SkelAnimation"
 
@@ -145,30 +140,28 @@ describe("re-create blender 5.0 files", () => {
         mesh.blenderDataName = "Cube"
 
         const blueFace = new GeomSubset(mesh, "blue")
-        new VariabilityAttr(blueFace, "elementType", Variability.Uniform, "face")
-        new VariabilityAttr(blueFace, "familyName", Variability.Uniform, "materialBind")
-        new IntArrayAttr(blueFace, "indices", [5])
-        new Relationship(blueFace, "material:binding", { isExplicit: true, explicit: [blue] })
+        blueFace.elementType = "face"
+        blueFace.familyName = "materialBind"
+        blueFace.indices = [5]
+        blueFace.materialBinding = { isExplicit: true, explicit: [blue] }
 
         const grayFace = new GeomSubset(mesh, "gray")
-        new VariabilityAttr(grayFace, "elementType", Variability.Uniform, "face")
-        new VariabilityAttr(grayFace, "familyName", Variability.Uniform, "materialBind")
-        new IntArrayAttr(grayFace, "indices", [1, 2, 3])
-        new Relationship(grayFace, "material:binding", { isExplicit: true, explicit: [gray] })
+        grayFace.elementType = "face"
+        grayFace.familyName = "materialBind"
+        grayFace.indices = [1, 2, 3]
+        grayFace.materialBinding = { isExplicit: true, explicit: [gray] }
 
         const greenFace = new GeomSubset(mesh, "green")
-        new VariabilityAttr(greenFace, "elementType", Variability.Uniform, "face")
-        new VariabilityAttr(greenFace, "familyName", Variability.Uniform, "materialBind")
-        new IntArrayAttr(greenFace, "indices", [4])
-        new Relationship(greenFace, "material:binding", { isExplicit: true, explicit: [green] })
+        greenFace.elementType = "face"
+        greenFace.familyName = "materialBind"
+        greenFace.indices = [4]
+        greenFace.materialBinding = { isExplicit: true, explicit: [green] }
 
         const redFace = new GeomSubset(mesh, "red")
-        new VariabilityAttr(redFace, "elementType", Variability.Uniform, "face")
-        new VariabilityAttr(redFace, "familyName", Variability.Uniform, "materialBind")
-        new IntArrayAttr(redFace, "indices", [0])
-        new Relationship(redFace, "material:binding", { isExplicit: true, explicit: [red] })
-
-        // _materials
+        redFace.elementType = "face"
+        redFace.familyName = "materialBind"
+        redFace.indices = [0]
+        redFace.materialBinding = { isExplicit: true, explicit: [red] }
 
         const light = new DomeLight(root, "env_light")
         light.intensity = 1.0
@@ -480,7 +473,6 @@ describe("re-create blender 5.0 files", () => {
         material.surface = shader.outputsSurface
         material.blenderDataName = "Material"
 
-
         const mesh = new Mesh(cube, "Cube")
         const skeleton = new Skeleton(cube, "Skel")
 
@@ -511,12 +503,9 @@ describe("re-create blender 5.0 files", () => {
         mesh.texCoords = [0.625, 0.5, 0.375, 0.5, 0.625, 0.75, 0.375, 0.75, 0.875, 0.5, 0.625, 0.25, 0.125, 0.5, 0.375, 0.25, 0.875, 0.75, 0.625, 1, 0.625, 0, 0.375, 1, 0.375, 0, 0.125, 0.75]
         mesh.texIndices = [0, 4, 8, 2, 3, 2, 9, 11, 12, 10, 5, 7, 6, 1, 3, 13, 1, 0, 2, 3, 7, 5, 0, 1]
 
-        new TokenAttr(mesh, "skel:blendShapes", Variability.Uniform, ["Key_1", "Key_2"])
-        // mesh.skeleton = skeleton
-        mesh.prependApiSchema("SkelBindingAPI")
-        new Relationship(mesh, "skel:skeleton", {
-            prepend: [skeleton] // prepend as in: prepend blendshapes before armature?
-        })
+        mesh.blendShapes = ["Key_1", "Key_2"]
+        mesh.skeleton = { prepend: [skeleton] }
+
         mesh.subdivisionScheme = "none"
         mesh.blenderDataName = "Cube"
 
@@ -528,10 +517,7 @@ describe("re-create blender 5.0 files", () => {
         key2.offsets = [0, 0, 0, -1, -1, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 1, 1, 0]
         key2.pointIndices = [0, 1, 2, 3, 4, 5, 6, 7]
 
-        new Relationship(mesh, "skel:blendShapeTargets", {
-            isExplicit: true,
-            explicit: [key1, key2]
-        })
+        mesh.blendShapeTargets = [key1, key2]
 
         skeleton.bindTransforms = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
         skeleton.joints = ["joint1"]
@@ -541,9 +527,7 @@ describe("re-create blender 5.0 files", () => {
         anim.blendShapeWeights = []
         anim.blendShapes = ["Key_1", "Key_2"]
 
-        new Relationship(skeleton, "skel:animationSource", {
-            prepend: [anim]
-        })
+        skeleton.animationSource = { prepend: [anim] }
 
         const light = new DomeLight(root, "env_light")
         light.intensity = 1.0

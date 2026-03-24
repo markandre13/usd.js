@@ -1,3 +1,5 @@
+import { ListOp } from "../../crate/ListOp"
+import { BlendShape } from "../skeleton/BlendShape"
 import type { Skeleton } from "../skeleton/Skeleton"
 
 /**
@@ -7,14 +9,16 @@ import type { Skeleton } from "../skeleton/Skeleton"
  */
 export interface SkelBindingAPI {
     // skel:animationSource
+
     /**
      * Skeleton to be bound to this prim and its descendents that
      * possess a mapping and weighting to the joints of the identified
      * Skeleton.
      */
-    set skeleton(value: Skeleton | undefined)
+    set skeleton(value: Skeleton | ListOp<Skeleton> | undefined)
 
     // primvars:skel:skinningMethod = "classicLinear"
+
     /**
      * Encodes the bind-time world space transforms of the prim.
      * If the transform is identical for a group of gprims that share a common
@@ -24,8 +28,8 @@ export interface SkelBindingAPI {
      */
     set geomBindTransform(value: ArrayLike<number> | undefined)
 
-    // skel:joints... i think this may select a subset of joints from the skeleton
-    // for use in jointIndices and jointWeights.
+    // skel:joints
+
     /**
      * Indices into the *joints* attribute of the closest (in namespace) bound Skeleton
      * that affect each point of a PointBased gprim.
@@ -52,4 +56,21 @@ export interface SkelBindingAPI {
      * that of *jointIndices*.
      */
     set jointWeights(value: { elementSize: number; indices: ArrayLike<number>}  | undefined)
+
+    /**
+     * An array of tokens defining the order onto which blend shape
+     * weights from an animation source map onto the *skel:blendShapeTargets*
+     * rel of a binding site. If authored, the number of elements must be equal
+     * to the number of targets in the _blendShapeTargets_ rel. This property
+     * is not inherited hierarchically, and is expected to be authored directly
+     * on the skinnable primitive to which the blend shapes apply.
+     */
+    set blendShapes(value: string[] | undefined)
+
+    /**
+     * Ordered list of all target blend shapes. This property is not
+     * inherited hierarchically, and is expected to be authored directly on
+     * the skinnable primitive to which the the blend shapes apply.
+     */
+    set blendShapeTargets(value: BlendShape[] | undefined)
 }

@@ -8,10 +8,12 @@ import { IntArrayAttr } from "../attributes/IntArrayAttr"
 import { VariabilityAttr } from "../attributes/VariabilityAttr"
 import { Relationship } from "../attributes/Relationship"
 import { StringAttr } from "../attributes/StringAttr"
-import type { Skeleton } from "../skeleton/Skeleton"
+import { Skeleton } from "../skeleton/Skeleton"
 
 import { PointBased, SubdivisionScheme } from "./PointBased"
 import { SkelBindingAPI } from "./SkelBindingAPI"
+import { TokenAttr } from "../attributes/TokenAttr"
+import { BlendShape } from "../skeleton/BlendShape"
 
 /**
  * Encodes a mesh with optional subdivision properties and features.
@@ -57,7 +59,7 @@ export class Mesh extends PointBased implements SkelBindingAPI {
 
     private apiSchemas?: ListOp<string>
 
-    prependApiSchema(name: string) {
+    private prependApiSchema(name: string) {
         if (this.apiSchemas === undefined) {
             this.apiSchemas = {}
         }
@@ -172,15 +174,20 @@ export class Mesh extends PointBased implements SkelBindingAPI {
     // SkelBindingAPI
     //
 
-    set skeleton(value: Skeleton | undefined) {
+    set skeleton(value: Skeleton | ListOp<Skeleton> | undefined) {
         this.deleteChild("skel:skeleton")
-        if (value !== undefined) {
-            this.prependApiSchema("SkelBindingAPI")
+        if (value === undefined) {
+            return
+        }
+        this.prependApiSchema("SkelBindingAPI")
+        if (value instanceof Skeleton) {
             new Relationship(this, "skel:skeleton", {
                 isExplicit: true,
                 explicit: [value]
             })
+            return
         }
+        new Relationship(this, "skel:skeleton", value)
     }
 
     set geomBindTransform(value: ArrayLike<number> | undefined) {
@@ -222,6 +229,23 @@ export class Mesh extends PointBased implements SkelBindingAPI {
                 node.setToken("interpolation", "vertex")
                 node.setInt("elementSize", value.elementSize)
                 node.setFloatArray("default", value.indices)
+            })
+        }
+    }
+
+    set blendShapes(value: string[] | undefined) {
+        this.deleteChild("skel:blendShapes")
+        if (value !== undefined) {
+            new TokenAttr(this, "skel:blendShapes", Variability.Uniform, value)
+        }
+    }
+
+    set blendShapeTargets(value: BlendShape[] | undefined) {
+        this.deleteChild("skel:blendShapeTargets")
+        if (value !== undefined) {
+            new Relationship(this, "skel:blendShapeTargets", {
+                isExplicit: true,
+                explicit: value
             })
         }
     }

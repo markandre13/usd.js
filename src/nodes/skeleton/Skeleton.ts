@@ -4,6 +4,9 @@ import type { UsdNode } from "../usd/UsdNode"
 import { Variability } from "../../crate/Variability"
 import { Attribute } from "../attributes/Attribute"
 import { Boundable } from "../geometry/Boundable"
+import { ListOp } from "../../crate/ListOp"
+import { SkelAnimation } from "./SkelAnimation"
+import { Relationship } from "../attributes/Relationship"
 
 /**
  * Describes a skeleton.
@@ -110,5 +113,16 @@ export class Skeleton extends Boundable {
             node.setToken("interpolation", "uniform")
             node.setFloatArray("default", value)
         })
+    }
+
+    /**
+     * Animation source to be bound to Skeleton primitives at or
+     * beneath the location at which this property is defined.
+     */
+    set animationSource(value: ListOp<SkelAnimation> | undefined) {
+        this.deleteChild("skel:animationSource")
+        if (value !== undefined) {
+            new Relationship(this, "skel:animationSource", value)
+        }
     }
 }
