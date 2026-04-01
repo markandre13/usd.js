@@ -16,7 +16,15 @@ import { Variability } from "./Variability.js"
 import { decompressFromBuffer } from "../compression/compress"
 import type { ListOp } from "./ListOp"
 
+// see tinyusdz CrateReader::UnpackValueRep() for implementation examples
+
 export const kMinCompressedArraySize = 16
+
+export interface TimeSamples {
+    timeIndex: ArrayLike<number>
+    sampleType: CrateDataType.Int | CrateDataType.Float | CrateDataType.Vec3f | CrateDataType.Vec3d | CrateDataType.Quatf | undefined
+    samples: ArrayLike<ArrayLike<number>>
+}
 
 // value's location.
 // FIXME: last two bytes are type info
@@ -31,9 +39,9 @@ export class ValueRep {
         const v = node instanceof UsdNode ? this.getValue(node.crate) : this.getValue(node)
         if (v === undefined) {
             if (node instanceof UsdNode) {
-                console.log(`ValueRep.getValue(): for ${node.getFullPathName()}.${key} not implemented yet: type: ${CrateDataType[this.getType()]}, array: ${this.isArray()}, inline: ${this.isInlined()}, compressed: ${this.isCompressed()}`)
+                throw Error(`ValueRep.getValue(): for ${node.getFullPathName()}.${key} not implemented yet: type: ${CrateDataType[this.getType()]}, array: ${this.isArray()}, inline: ${this.isInlined()}, compressed: ${this.isCompressed()}`)
             } else {
-                console.log(`ValueRep.getValue(): for .${key} not implemented yet: type: ${CrateDataType[this.getType()]}, array: ${this.isArray()}, inline: ${this.isInlined()}, compressed: ${this.isCompressed()}`)
+                throw Error(`ValueRep.getValue(): for .${key} not implemented yet: type: ${CrateDataType[this.getType()]}, array: ${this.isArray()}, inline: ${this.isInlined()}, compressed: ${this.isCompressed()}`)
             }
         }
         return {
@@ -128,6 +136,42 @@ export class ValueRep {
                     return this._buffer.getInt32(this._offset, true)
                 }
                 break
+            case CrateDataType.Vec2h:
+            case CrateDataType.Vec3h:
+            case CrateDataType.Vec4h: {
+                let size = 0
+                switch (this.getType()) {
+                    case CrateDataType.Vec2h:
+                        size = 2
+                        break
+                    case CrateDataType.Vec3h:
+                        size = 3
+                        break
+                    case CrateDataType.Vec4h:
+                        size = 4
+                        break
+                }
+                if (this.isArray() && !this.isInlined() && !this.isCompressed()) {
+                    crate.reader.offset = this.getIndex()
+                    const n = reader.getUint64()
+                    const arr = new Array<number>(n * size)
+                    for (let i = 0; i < n * size; ++i) {
+                        arr[i] = reader.getFloat16()
+                    }
+                    return arr
+                }
+                if (!this.isArray() && !this.isInlined() && !this.isCompressed()) {
+                    reader.offset = this.getIndex()
+                    const arr = new Array<number>(size)
+                    for (let i = 0; i < size; ++i) {
+                        arr[i] = reader.getFloat16()
+                    }
+                    return arr
+                }
+                if (!this.isArray() && this.isInlined() && !this.isCompressed()) {
+                    return this.getVec3f()
+                }
+            } break
             case CrateDataType.Vec2f:
             case CrateDataType.Vec3f:
             case CrateDataType.Vec4f: {
@@ -203,23 +247,29 @@ export class ValueRep {
             case CrateDataType.Matrix2d:
             case CrateDataType.Matrix3d:
             case CrateDataType.Matrix4d:
+                let s: number
                 let n: number
                 switch (this.getType()) {
                     case CrateDataType.Matrix2d:
+                        s = 2
                         n = 2 * 2
                         break
                     case CrateDataType.Matrix3d:
+                        s = 3
                         n = 3 * 3
                         break
                     case CrateDataType.Matrix4d:
+                        s = 4
                         n = 4 * 4
                         break
+                    default:
+                        throw Error()
                 }
                 if (!this.isInlined() && !this.isArray() && !this.isCompressed()) {
-                    crate.reader.offset = this.getIndex()
+                    reader.offset = this.getIndex()
                     const arr = new Array<number>(n!)
                     for (let i = 0; i < n!; ++i) {
-                        arr[i] = crate.reader.getFloat64()
+                        arr[i] = reader.getFloat64()
                     }
                     return arr
                 }
@@ -228,12 +278,30 @@ export class ValueRep {
                     n = n! * reader.getUint64()
                     const arr = new Array<number>(n!)
                     for (let i = 0; i < n!; ++i) {
-                        arr[i] = crate.reader.getFloat64()
+                        arr[i] = reader.getFloat64()
+                    }
+                    return arr
+                }
+                if (this.isInlined() && !this.isArray() && !this.isCompressed()) {
+                    const arr = new Array<number>(n!)
+                    arr.fill(0)
+                    for (let i = 0, o = 0; i < s; ++i, o += s + 1) {
+                        arr[o] = this._buffer.getInt8(this._offset + i)
                     }
                     return arr
                 }
                 break
-
+            case CrateDataType.Quatf:
+                if (!this.isInlined() && this.isArray() && !this.isCompressed()) {
+                    reader.offset = this.getIndex()
+                    const n = reader.getUint64()
+                    const arr = new Array<number>(n * 4)
+                    for (let i = 0; i < n * 4; ++i) {
+                        arr[i] = reader.getFloat32()
+                    }
+                    return arr
+                }
+                break
             case CrateDataType.TokenVector:
                 if (!this.isInlined() && !this.isArray() && !this.isCompressed()) {
                     crate.reader.offset = this.getIndex()
@@ -245,6 +313,95 @@ export class ValueRep {
                     }
                     return arr
                 }
+                break
+            case CrateDataType.TimeSamples:
+                if (!this.isInlined() && !this.isArray() && !this.isCompressed()) {
+                    crate.reader.offset = this.getIndex()
+
+                    // move to
+                    let offset = reader.getUint64()
+                    // console.log(`TimeSample times value offset = ${offset}`)
+                    reader.offset = reader.offset + offset - 8
+                    const times_rep = new ValueRep(reader._dataview, reader.offset)
+
+                    reader.offset += 8
+                    const values_offset = reader.offset
+
+                    // console.log(`values_offset = ${values_offset}`)
+                    // console.log(`times_rep.GetType() = ${times_rep.getType()} (${CrateDataType[times_rep.getType()]})`)
+
+                    // this would be the list of time indices?
+                    const timeIndex = times_rep.getValue(crate) as ArrayLike<number>
+                    if (timeIndex == undefined) {
+                        throw Error(`yikes`)
+                    }
+                    // console.log('`times` = ', timeIndex)
+
+                    reader.offset = values_offset
+                    offset = reader.getUint64()
+
+                    // console.log(`TimeSample times value offset = ${offset}`)
+                    // console.log(`TimeSample tell = ${reader.offset}`)
+
+                    reader.offset += offset - 8
+                    // console.log(`get samples reps @ ${reader.offset}`)
+                    const num_values = reader.getUint64()
+                    // console.log(`Number of values = ${num_values}`)
+                    if (num_values !== timeIndex.length) {
+                        throw Error(`yikes`)
+                    }
+                    const samples = new Array<ArrayLike<number>>(num_values)
+                    let sampleType: any | undefined
+                    for (let i = 0; i < num_values; ++i) {
+                        // console.log(`get sample[${i}].rep @ ${reader.offset}`)
+                        const rep = new ValueRep(reader._dataview, reader.offset)
+                        // console.log(`get sample[${i}].data @ ${rep.getIndex()}`)
+
+                        if (i === 0) {
+                            sampleType = rep.getType()
+                        } else {
+                            if (sampleType !== rep.getType()) {
+                                throw Error('yikes')
+                            }
+                        }
+                        // console.log(`samples[${i}] = ${CrateDataType[rep.getType()]}`)
+                        reader.offset += 8
+                        const next_vrep_loc = reader.offset
+                        samples[i] = rep.getValue(crate)
+                        // console.log(`samples[${i}] = ${samples[i]}`)
+                        if (samples[i] === undefined) {
+                            throw Error(`yikes: ${rep}`)
+                        }
+                        reader.offset = next_vrep_loc
+                    }
+                    reader.offset = values_offset
+                    reader.offset += 8 * num_values
+                    const result: TimeSamples = {
+                        timeIndex,
+                        sampleType,
+                        samples
+                    }
+                    // console.log(result)
+                    return result
+                    // }
+                    // return []
+                }
+                break
+            case CrateDataType.DoubleVector:
+                // console.log(this.toString())
+                if (!this.isArray() && !this.isInlined() && !this.isCompressed()) {
+                    // console.log(`get DoubleVector.vrep @ ${this._offset}`)
+                    reader.offset = this.getIndex()
+                    // console.log(`get DoubleVector.data @ ${reader.offset}`)
+                    const n = reader.getUint64()
+                    const arr = new Float64Array(n)
+                    for (let i = 0; i < n; ++i) {
+                        arr[i] = reader.getFloat64()
+                    }
+                    // console.log(`DoubleVector = %o`, Array.from(arr))
+                    return arr
+                }
+                console.log(`DoubleVector = undefined`)
                 break
             case CrateDataType.AssetPath:
                 if (!this.isArray() && this.isInlined() && !this.isCompressed()) {
@@ -364,11 +521,14 @@ export class ValueRep {
     hexdump() {
         hexdump(new Uint8Array(this._buffer.buffer), this._offset, 8)
     }
-    getPayload(): bigint {
-        const d = new DataView(this._buffer.buffer, this._buffer.byteOffset)
-        const value = d.getBigUint64(this._offset, true) // & 0xffffffffffffn
+    getPayload(): string {
+        // const d = new DataView(this._buffer.buffer, this._buffer.byteOffset)
+        // const value = d.getBigUint64(this._offset, true) // & 0xffffffffffffn
         // console.log(`value rep @ ${this._offset} = ${value}`)
-        return value
+        const dword0 = this._buffer.getUint32(this._offset)
+        const dword1 = this._buffer.getUint32(this._offset + 4)
+
+        return dword0.toString(16).padStart(8, '0') + dword1.toString(16).padStart(8, '0')
     }
     // TODO: rename the following to inline? or merge them with the general ones
     getBool(): boolean {
@@ -395,7 +555,7 @@ export class ValueRep {
     }
     toString(crate?: Crate): string {
         if (crate === undefined) {
-        return `type: ${GetCrateDataType(this.getType()!)} (${this.getType()}), isArray: ${this.isArray()}, isInlined: ${this.isInlined()}, isCompressed:${this.isCompressed()}, payload: ${this.getPayload()}`
+            return `type: ${GetCrateDataType(this.getType()!)} (${this.getType()}), isArray: ${this.isArray()}, isInlined: ${this.isInlined()}, isCompressed:${this.isCompressed()}, payload: ${this.getPayload()}`
         }
         return `type: ${GetCrateDataType(this.getType()!)} (${this.getType()}), isArray: ${this.isArray()}, isInlined: ${this.isInlined()}, isCompressed:${this.isCompressed()}, value: ${JSON.stringify(this.getValue(crate))}`
     }

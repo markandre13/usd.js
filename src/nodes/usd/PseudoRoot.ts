@@ -22,6 +22,9 @@ import { UsdNode } from "./UsdNode"
 export class PseudoRoot extends UsdNode {
     metersPerUnit?: number = 1;
     documentation?: string
+    timeCodesPerSecond?: number
+    startTimeCode?: number
+    endTimeCode?: number
     upAxis?: "X" | "Y" | "Z" = "Z";
     defaultPrim?: string
 
@@ -39,6 +42,9 @@ export class PseudoRoot extends UsdNode {
         super.encodeFields()
         this.setDouble("metersPerUnit", this.metersPerUnit)
         this.setString("documentation", this.documentation)
+        this.setDouble("timeCodesPerSecond", this.timeCodesPerSecond)
+        this.setDouble("startTimeCode", this.startTimeCode)
+        this.setDouble("endTimeCode", this.endTimeCode)
         this.setToken("upAxis", this.upAxis)
         this.setToken("defaultPrim", this.defaultPrim)
     }

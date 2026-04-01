@@ -1,6 +1,6 @@
 # Universal Scene Description for TypeScript
 
-Tiny, dependency-free USDC library written in TypeScript.
+Tiny, dependency free USDC library written in TypeScript.
 
 _Tiny_ also means that only a tiny subset of USD has been implemented.
 

@@ -24,7 +24,7 @@ import { decodeIntegers, encodeIntegers } from "../src/compression/integers"
 import { Mesh } from "../src/nodes/geometry/Mesh"
 import { Xform } from "../src/nodes/geometry/Xform"
 import { PseudoRoot } from "../src/nodes/usd/PseudoRoot"
-import { ValueRep } from "../src/crate/ValueRep"
+import { TimeSamples, ValueRep } from "../src/crate/ValueRep"
 
 function makeCreate() {
     return new Crate()
@@ -703,7 +703,116 @@ describe("USD", () => {
         })
         it("Int")
         it("Vec3d")
-        it("Matrix[234]d[\[\]])")
+        it("Matrix[234]d[[]])")
+        describe("TimeSamples", () => {
+            it("Int", () => {
+                const value: TimeSamples = {
+                    timeIndex: [1, 2],
+                    sampleType: CrateDataType.Int,
+                    samples: [
+                        [3, 4],
+                        [5, 6]
+                    ]
+                }
+                const crate = new Crate()
+                crate.reader = new Reader(crate.writer.view)
+
+                const idx = crate.fields.setTimeSamples("timeSamples", value)
+
+                const rep = new ValueRep(crate.fields.valueReps.view, idx)
+                expect(rep.getType()).to.equal(CrateDataType.TimeSamples)
+                const got = rep.getValue(crate) as TimeSamples
+                got.timeIndex = Array.from(got.timeIndex)
+
+                // console.log("EXPECT")
+                // console.log("%o", value)
+                // console.log("GOT")
+                // console.log("%o", got)
+
+                expect(got).to.deep.equal(value)
+            })
+            it("Float", () => {
+                // Quatf, Float, Vec3f
+                const value: TimeSamples = {
+                    timeIndex: [1, 2],
+                    sampleType: CrateDataType.Float,
+                    samples: [
+                        [3, 4],
+                        [5, 6]
+                    ]
+                }
+                const crate = new Crate()
+                crate.reader = new Reader(crate.writer.view)
+
+                const idx = crate.fields.setTimeSamples("timeSamples", value)
+
+                const rep = new ValueRep(crate.fields.valueReps.view, idx)
+                expect(rep.getType()).to.equal(CrateDataType.TimeSamples)
+                const got = rep.getValue(crate) as TimeSamples
+                got.timeIndex = Array.from(got.timeIndex)
+
+                // console.log("EXPECT")
+                // console.log("%o", value)
+                // console.log("GOT")
+                // console.log("%o", got)
+
+                expect(got).to.deep.equal(value)
+            })
+            it("Vec3f", () => {
+                // Quatf, Float, Vec3f
+                const value: TimeSamples = {
+                    timeIndex: [1, 2],
+                    sampleType: CrateDataType.Vec3f,
+                    samples: [
+                        [3, 4, 5, 6, 7, 8],
+                        [9, 10, 11, 12, 13, 14]
+                    ]
+                }
+                const crate = new Crate()
+                crate.reader = new Reader(crate.writer.view)
+
+                const idx = crate.fields.setTimeSamples("timeSamples", value)
+
+                const rep = new ValueRep(crate.fields.valueReps.view, idx)
+                expect(rep.getType()).to.equal(CrateDataType.TimeSamples)
+                const got = rep.getValue(crate) as TimeSamples
+                got.timeIndex = Array.from(got.timeIndex)
+
+                // console.log("EXPECT")
+                // console.log("%o", value)
+                // console.log("GOT")
+                // console.log("%o", got)
+
+                expect(got).to.deep.equal(value)
+            })
+            it("Quatf", () => {
+                const value: TimeSamples = {
+                    timeIndex: [1, 2],
+                    sampleType: CrateDataType.Quatf,
+                    samples: [
+                        [3, 4, 5, 6, 7, 8, 9, 10],
+                        [11, 12, 13, 14, 15, 16, 17, 18]
+                    ]
+                }
+                const crate = new Crate()
+                crate.reader = new Reader(crate.writer.view)
+
+                const idx = crate.fields.setTimeSamples("timeSamples", value)
+
+                const rep = new ValueRep(crate.fields.valueReps.view, idx)
+                expect(rep.getType()).to.equal(CrateDataType.TimeSamples)
+                const got = rep.getValue(crate) as TimeSamples
+                got.timeIndex = Array.from(got.timeIndex)
+
+                // console.log("EXPECT")
+                // console.log("%o", value)
+                // console.log("GOT")
+                // console.log("%o", got)
+
+                expect(got).to.deep.equal(value)
+            })
+
+        })
     })
     describe("Crate parts", () => {
         it("BootStrap", () => {

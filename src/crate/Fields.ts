@@ -6,7 +6,7 @@ import { Reader } from "./Reader.js"
 import type { Specifier } from "./Specifier"
 import type { Strings } from "./Strings"
 import type { Tokens } from "./Tokens"
-import { kMinCompressedArraySize, ValueRep } from "./ValueRep"
+import { kMinCompressedArraySize, TimeSamples, ValueRep } from "./ValueRep"
 import type { Variability } from "./Variability"
 import { Writer } from "./Writer.js"
 import { UsdNode } from "../nodes/usd/UsdNode.js"
@@ -304,6 +304,23 @@ export class Fields {
     setIntArray(name: string, value: ArrayLike<number>): number {
         const idx = this.valueReps.tell() / 8
         this.tokenIndices.push(this.tokens.add(name))
+        this._setIntArray(value)
+        // this.valueReps.writeUint32(this.data.tell())
+        // this.valueReps.skip(2)
+        // this.valueReps.writeUint8(CrateDataType.Int)
+        // if (value.length < kMinCompressedArraySize) {
+        //     this.valueReps.writeUint8(IsArrayBit_)
+        //     this.data.writeUint64(value.length)
+        //     for (let i = 0; i < value.length; ++i) {
+        //         this.data.writeInt32(value[i])
+        //     }
+        // } else {
+        //     this.valueReps.writeUint8(IsArrayBit_ | IsCompressedBit)
+        //     this.data.writeCompressedIntegers(value)
+        // }
+        return idx
+    }
+    _setIntArray(value: ArrayLike<number>) {
         this.valueReps.writeUint32(this.data.tell())
         this.valueReps.skip(2)
         this.valueReps.writeUint8(CrateDataType.Int)
@@ -317,7 +334,6 @@ export class Fields {
             this.valueReps.writeUint8(IsArrayBit_ | IsCompressedBit)
             this.data.writeCompressedIntegers(value)
         }
-        return idx
     }
     setVec2f(name: string, value: ArrayLike<number>): number {
         return this.setVecXf(name, value, CrateDataType.Vec2f, 2)
@@ -465,6 +481,112 @@ export class Fields {
         for (let i = 0; i < value.length; ++i) {
             this.data.writeFloat32(value[i])
         }
+        return idx
+    }
+    setTimeSamples(name: string, value: TimeSamples) {
+        const idx = this.valueReps.tell() / 8
+        this.tokenIndices.push(this.tokens.add(name))
+
+        this.valueReps.writeUint32(this.data.tell())
+        this.valueReps.skip(2)
+        this.valueReps.writeUint8(CrateDataType.TimeSamples)
+        this.valueReps.writeUint8(0)
+
+        // offset to timeIndices
+        this.data.writeUint64(8) // right after here
+
+        // either DoubleVector or Double[]
+        // console.log(`put DoubleVector.vrep @ ${this.data.tell()}`)
+
+        this.data.writeUint32(this.data.tell() + 16) // data is after this ValueRep and offset
+        this.data.skip(2)
+        this.data.writeUint8(CrateDataType.DoubleVector)
+        this.data.writeUint8(0)
+
+        this.data.writeUint64(8 + value.samples.length * 8 + 8) // data is after DoubleVector
+
+        // console.log(`put DoubleVector.data @ ${this.data.tell()}`)
+        this.data.writeUint64(value.samples.length)
+        for (let i = 0; i < value.samples.length; ++i) {
+            this.data.writeFloat64(value.timeIndex[i])
+        }
+
+        // console.log(`put samples reps @ ${this.data.tell()}`)
+        let tupleSize: number
+        let typeSize: number
+
+        switch (value.sampleType) {
+            case CrateDataType.Int:
+                tupleSize = 1
+                typeSize = 4
+                break
+            case CrateDataType.Float:
+                tupleSize = 1
+                typeSize = 4
+                break
+            case CrateDataType.Vec3f:
+                tupleSize = 3
+                typeSize = 4
+                break
+            case CrateDataType.Quatf:
+                tupleSize = 4
+                typeSize = 4
+                break
+            case CrateDataType.Vec3d:
+                tupleSize = 3
+                typeSize = 8
+                break
+            default:
+                throw Error(`TimeSamples.sampleType ${value.sampleType} is not allowed`)
+        }
+
+        // a list of valuereps
+        let offset = this.data.tell() + value.samples.length * 8 + 8 // data after ValueRep list
+        this.data.writeUint64(value.samples.length)
+
+        for (let i = 0; i < value.samples.length; ++i) {
+            // console.log(`put sample[${i}].rep @ ${this.data.tell()}`)
+            this.data.writeUint32(offset) // data is after this ValueRep and offset
+            this.data.skip(2)
+            this.data.writeUint8(value.sampleType)
+            this.data.writeUint8(IsArrayBit_)
+            offset += 8 + value.samples[i].length * typeSize
+        }
+        switch (value.sampleType) {
+            case CrateDataType.Int:
+                // TODO: use _setIntArray() to write a compressed int array
+                for (let i = 0; i < value.samples.length; ++i) {
+                    // console.log(`put sample[${i}].data @ ${this.data.tell()}`)
+                    this.data.writeUint64(value.samples[i].length / tupleSize)
+                    for (let j = 0; j < value.samples[i].length; ++j) {
+                        this.data.writeInt32(value.samples[i][j])
+                    }
+                }
+                break
+            case CrateDataType.Float:
+            case CrateDataType.Vec3f:
+            case CrateDataType.Quatf:
+                for (let i = 0; i < value.samples.length; ++i) {
+                    // console.log(`put sample[${i}].data @ ${this.data.tell()}`)
+                    this.data.writeUint64(value.samples[i].length / tupleSize)
+                    for (let j = 0; j < value.samples[i].length; ++j) {
+                        this.data.writeFloat32(value.samples[i][j])
+                    }
+                }
+                break
+            // case CrateDataType.Double:
+            // case CrateDataType.Quatd:
+            case CrateDataType.Vec3d:
+                for (let i = 0; i < value.samples.length; ++i) {
+                    // console.log(`put sample[${i}].data @ ${this.data.tell()}`)
+                    this.data.writeUint64(value.samples[i].length / tupleSize)
+                    for (let j = 0; j < value.samples[i].length; ++j) {
+                        this.data.writeFloat64(value.samples[i][j])
+                    }
+                }
+                break
+        }
+
         return idx
     }
     serialize(writer: Writer) {

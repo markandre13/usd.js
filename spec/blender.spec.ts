@@ -19,6 +19,8 @@ import { Attribute } from "../src/nodes/attributes/Attribute"
 import { Material } from "../src/nodes/shader/Material"
 import { BlendShape } from "../src/nodes/skeleton/BlendShape"
 import { SkelAnimation } from "../src/nodes/skeleton/SkelAnimation"
+import { CrateDataType } from "../src/crate/CrateDataType"
+import { Relationship } from "../src/nodes/attributes/Relationship"
 
 /**
  * re-create USDC files generated with blender 5.x
@@ -486,12 +488,15 @@ describe("re-create blender 5.0 files", () => {
         }
         mesh.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]
         mesh.points = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1]
-        // not sure where this comes from
+
+        // blender exports this but it's not defined in the OpenUSD schemas nor can google find it.
+        // and blender usd import also works without it.
         new Attribute(mesh, "primvars:Group", node => {
             node.setToken("typeName", "float[]")
             node.setToken("interpolation", "vertex")
             node.setFloatArray("default", [0, 0, 0, 0, 0, 0, 0, 0])
         })
+
         mesh.jointIndices = {
             elementSize: 1,
             indices: [0, 0, 0, 0, 0, 0, 0, 0]
@@ -547,17 +552,242 @@ describe("re-create blender 5.0 files", () => {
 
         compare(pseudoRootIn, orig)
     })
+    // https://openusd.org/dev/user_guides/time_and_animated_values.html
+    // USD only supports samples, not curves for animations.
+    // Blender can convert the sample to curces:
+    // go to Graph Editor > Key > Density > Decimate (Ratio)
+    // and move the mouse to adjust the precision
+    it.only("cube-animation.usdc", () => {
+        const prefix = "spec/examples/cube-animation"
+        // read the original
+        const buffer = readFileSync(`${prefix}.usdc`)
+        const stageIn = new Stage(buffer)
+        const origPseudoRoot = stageIn.getPrimAtPath("/")!
+        const orig = origPseudoRoot.toJSON()
+        // console.log(JSON.stringify(orig, undefined, 4))
+        writeFileSync(`x.json`, stringify(orig, { indent: 4 }))
+
+        // read an adjusted, good enough variant of the original's JSON
+        // const buffer = readFileSync(`${prefix}.json`)
+        // const orig = JSON.parse(buffer.toString())
+
+        const crate = new Crate()
+
+        const pseudoRoot = new PseudoRoot(crate)
+        // pseudoRoot.metersPerUnit = 1
+        pseudoRoot.defaultPrim = "root"
+        pseudoRoot.documentation = "Blender v5.1.0"
+        pseudoRoot.timeCodesPerSecond = 24
+        pseudoRoot.startTimeCode = 1
+        pseudoRoot.endTimeCode = 100
+        // pseudoRoot.upAxis = "Z"
+
+        const root = new Xform(pseudoRoot, "root")
+        root.customData = {
+            Blender: {
+                generated: true
+            }
+        }
+
+        const skelRoot = new SkelRoot(root, "Empty")
+        skelRoot.blenderObjectName = "Empty"
+
+        const mesh = new Xform(skelRoot, "Mesh")
+        // mesh.active = undefined
+        mesh.blenderObjectName = "Mesh"
+        const meshData = new Mesh(mesh, "MeshData")
+
+        const skelForm = new Xform(skelRoot, "Skel")
+        skelForm.blenderObjectName = "Skel"
+        new Attribute(skelForm, "xformOp:rotateXYZ", (node) => {
+            node.setToken("typeName", "float3")
+            node.setTimeSamples("timeSamples", {
+                timeIndex: [1],
+                sampleType: CrateDataType.Vec3f,
+                samples: [
+                    [0, 0, 0]
+                ]
+            })
+        })
+        new Attribute(skelForm, "xformOp:scale", (node) => {
+            node.setToken("typeName", "float3")
+            node.setTimeSamples("timeSamples", {
+                timeIndex: [1],
+                sampleType: CrateDataType.Vec3f,
+                samples: [
+                    [1, 1, 1]
+                ]
+            })
+        })
+        new Attribute(skelForm, "xformOp:translate", (node) => {
+            node.setToken("typeName", "double3")
+            node.setTimeSamples("timeSamples", {
+                timeIndex: [1],
+                sampleType: CrateDataType.Vec3d,
+                samples: [
+                    [0, 0, 0]
+                ]
+            })
+        })
+        skelForm.xformOrder = ["xformOp:translate", "xformOp:rotateXYZ", "xformOp:scale"]
+
+        const skeleton = new Skeleton(skelForm, "Skel")
+        skeleton.bindTransforms = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1]
+        skeleton.joints = ["joint1", "joint1/joint2"]
+        skeleton.blenderBoneLength = [1, 1]
+        skeleton.restTransforms = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1]
+        new Relationship(skeleton, "skel:animationSource", {
+            isExplicit: true,
+            explicit: [] // /root/Empty/Skel/Skel/SkelAction
+        })
+        
+        // SkelAction
+        // joints
+        // translation
+        // rotations
+        // scales
+        // blendShapes
+        // blendShapeWeights
+
+        const materials = new Scope(root, "_materials")
+
+        // material definition with three nodes, connected as follows:
+        //
+        // Material        principledBSDF          imageTexture    uvmap
+        // outputs:surface outputs:surface
+        //                 inputs:diffuseColor     outputs:rgb
+        //                                         inputs:st       outputs:result
+        const material = new Material(materials, "Material")
+        material.blenderDataName = "Material"
+
+        const uvmap = new UVMap(material, "uvmap")
+        uvmap.infoId = "UsdPrimvarReader_float2"
+        uvmap.inputsVarname = "st"
+
+        const imageTexture = new ImageTexture(material, "Image_Texture")
+        imageTexture.infoId = "UsdUVTexture"
+        imageTexture.file = "./textures/cubetexture.png"
+        imageTexture.sourceColorSpace = "sRGB"
+        imageTexture.uvCoords = uvmap.outputsResult
+        imageTexture.wrapS = "repeat"
+        imageTexture.wrapT = "repeat"
+
+        const principledBSDF = new PrincipledBSDF(material, "Principled_BSDF")
+        principledBSDF.infoId = "UsdPreviewSurface"
+        principledBSDF.clearcoat = 0
+        principledBSDF.clearcoatRoughness = 0.03
+        principledBSDF.diffuseColor = imageTexture.outputsRGB
+        principledBSDF.ior = 1.5
+        principledBSDF.metallic = 0
+        principledBSDF.opacity = 1
+        principledBSDF.roughness = 0.5
+        principledBSDF.specular = 0.5
+
+        material.surface = principledBSDF.outputsSurface
+
+        //
+        // MESH
+        //
+        meshData.doubleSided = true
+        meshData.extent = [-1, -1, -1, 1, 1, 1]
+        meshData.faceVertexCounts = [4, 4, 4, 4, 4, 4]
+        meshData.faceVertexIndices = [0, 4, 6, 2, 3, 2, 6, 7, 7, 6, 4, 5, 5, 1, 3, 7, 1, 0, 2, 3, 5, 4, 0, 1]
+        meshData.materialBinding = {
+            isExplicit: true,
+            explicit: [material]
+        }
+        meshData.normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]
+        meshData.points = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1]
+
+        // blender exports this but it's not defined in the OpenUSD schemas nor can google find it.
+        // and blender usd import also works without it.
+        new Attribute(meshData, "primvars:Group", node => {
+            node.setToken("typeName", "float[]")
+            node.setToken("interpolation", "vertex")
+            node.setFloatArray("default", [0, 0, 0, 0, 0, 0, 0, 0])
+        })
+
+        // primvars:skel:geomBindTransform
+        meshData.geomBindTransform = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+
+        meshData.jointIndices = {
+            elementSize: 1,
+            indices: [0, 0, 0, 0, 0, 0, 0, 0]
+        }
+        meshData.jointWeights = {
+            elementSize: 1,
+            indices: [1, 1, 1, 1, 1, 1, 1, 1]
+        }
+        meshData.texCoords = [0.625, 0.5, 0.375, 0.5, 0.625, 0.75, 0.375, 0.75, 0.875, 0.5, 0.625, 0.25, 0.125, 0.5, 0.375, 0.25, 0.875, 0.75, 0.625, 1, 0.625, 0, 0.375, 1, 0.375, 0, 0.125, 0.75]
+        // meshData.texIndices = [0, 4, 8, 2, 3, 2, 9, 11, 12, 10, 5, 7, 6, 1, 3, 13, 1, 0, 2, 3, 7, 5, 0, 1]
+
+        // int[] primvars:st:indices.timeSamples = {
+        //     1: [0, 4, 8, 2, 3, 2, 9, 11, 12, 10, 5, 7, 6, 1, 3, 13, 1, 0, 2, 3, 7, 5, 0, 1],
+        // }
+
+        new Attribute(meshData, "primvars:st:indices", (node) => {
+            node.setToken("typeName", "int[]")
+            node.setTimeSamples("timeSamples", {
+                timeIndex: [1],
+                sampleType: CrateDataType.Int,
+                samples: [
+                    [0, 4, 8, 2, 3, 2, 9, 11, 12, 10, 5, 7, 6, 1, 3, 13, 1, 0, 2, 3, 7, 5, 0, 1]
+                ]
+            })
+        })
+        // skel:blendShapeTargets
+
+        meshData.blendShapes = ["Key_1", "Key_2"]
+        meshData.skeleton = skeleton // FIX: needs to be /root/Empty/Skel/Skel ????
+
+        meshData.subdivisionScheme = "none"
+        meshData.blenderDataName = "MeshData"
+
+        const key1 = new BlendShape(meshData, "Key_1")
+        key1.offsets = [-1.1725950241088867, -0.8274050354957581, 0, 0, 0, 0, -0.8274050354957581, 1.1725950241088867, 0, 0, 0, 0, 0.8274050354957581, -1.1725950241088867, 0, 0, 0, 0, 1.1725950241088867, 0.8274050354957581, 0, 0, 0, 0]
+        key1.pointIndices = [0, 1, 2, 3, 4, 5, 6, 7]
+
+        const key2 = new BlendShape(meshData, "Key_2")
+        key2.offsets = [0, 0, 0, -1, -1, 0, 0, 0, 0, -1, 1, 0, 0, 0, 0, 1, -1, 0, 0, 0, 0, 1, 1, 0]
+        key2.pointIndices = [0, 1, 2, 3, 4, 5, 6, 7]
+
+        meshData.blendShapeTargets = [key1, key2]
+
+        const domeLight = new DomeLight(root, "env_light")
+        domeLight.intensity = 1
+        domeLight.textureFile = "./textures/color_0C0C0C.exr"
+
+        // serialize everything into crate.writer
+        crate.serialize(pseudoRoot)
+        // crate.print()
+
+        // console.log("----------------")
+
+        // deserialize 
+        const stage = new Stage(Buffer.from(crate.writer.buffer))
+
+        // stage._crate.print()
+
+        const pseudoRootIn = stage.getPrimAtPath("/")!.toJSON()
+
+        const filename = prefix.split('/').pop()
+        writeFileSync(`${filename}-generated.usdc`, Buffer.from(crate.writer.buffer))
+        writeFileSync(`${filename}-original.json`, stringify(orig, { indent: 4 }))
+        writeFileSync(`${filename}-generated.json`, stringify(pseudoRootIn, { indent: 4 }))
+
+        compare(pseudoRootIn, orig)
+    })
 })
 
 // this is the thing i still need to write
 function compare(lhs: any, rhs: any, path: string = "") {
-    // console.log(`compare ${lhs}: ${typeof lhs}, ${rhs}: ${typeof rhs}, ${path}`)
+    // console.log(`compare ${ lhs }: ${ typeof lhs }, ${ rhs }: ${ typeof rhs }, ${ path }`)
     if (typeof lhs !== typeof rhs) {
         throw Error(`${path} lhs is of type ${typeof lhs} while rhs is of type ${rhs}`)
     }
     if (typeof lhs !== "object") {
         if (lhs !== rhs) {
-            throw Error(`${path}: ${lhs} !== ${rhs}`)
+            throw Error(`${path}: ${lhs} !== ${rhs} `)
         }
         return
     }
@@ -578,7 +808,7 @@ function compare(lhs: any, rhs: any, path: string = "") {
     for (const name of Object.getOwnPropertyNames(lhs)) {
         const fa = lhs[name]
         const fb = rhs[name]
-        compare(fa, fb, `${path}.${name}`)
+        compare(fa, fb, `${path}.${name} `)
     }
 }
 

@@ -44,6 +44,8 @@ import { BlendShape } from "../skeleton/BlendShape"
  * [OpenSubdiv](https://graphics.pixar.com/opensubdiv/docs/subdivision_surfaces.html).
  */
 export class Mesh extends PointBased implements SkelBindingAPI {
+    active?: boolean = true
+
     constructor(parent: UsdNode, name: string) {
         super(parent.crate, parent, -1, name, true)
         this.spec_type = SpecType.Prim
@@ -54,7 +56,7 @@ export class Mesh extends PointBased implements SkelBindingAPI {
     override encodeFields(): void {
         super.encodeFields()
         this.setTokenListOp("apiSchemas", this.apiSchemas)
-        this.setBoolean("active", true)
+        this.setBoolean("active", this.active)
     }
 
     private apiSchemas?: ListOp<string>
