@@ -1,6 +1,6 @@
 import { Reader } from "./Reader.js"
-import type { Tokens } from "./Tokens"
-import type { Writer } from "./Writer"
+import type { Tokens } from "./Tokens.js"
+import type { Writer } from "./Writer.js"
 
 // WHUT? these are stored as a _non-compressed_ list of integers???
 export class Strings {

@@ -1,12 +1,12 @@
-import { Variability } from "../../../crate/Variability"
-import { Attribute } from "../../attributes/Attribute"
-import { Color3fAttr } from "../../attributes/Color3fAttr"
-import { FloatAttr } from "../../attributes/FloatAttr"
-import { TokenAttr } from "../../attributes/TokenAttr"
-import { Scope } from "../../geometry/Scope"
-import { UsdNode } from "../../usd/UsdNode"
-import { Material } from "../Material"
-import { Shader } from "../Shader"
+import { Variability } from "../../../crate/Variability.js"
+import { Attribute } from "../../attributes/Attribute.js"
+import { Color3fAttr } from "../../attributes/Color3fAttr.js"
+import { FloatAttr } from "../../attributes/FloatAttr.js"
+import { TokenAttr } from "../../attributes/TokenAttr.js"
+import { Scope } from "../../geometry/Scope.js"
+import { UsdNode } from "../../usd/UsdNode.js"
+import { Material } from "../Material.js"
+import { Shader } from "../Shader.js"
 
 export class PrincipledBSDF extends Shader {
     set infoId(value: string | undefined) {

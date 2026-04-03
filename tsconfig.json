@@ -1,12 +1,12 @@
 {
     "compilerOptions": {
         "target": "es2020",
-        "module": "es6",
+        "module": "nodenext",
         "lib": [
             "esnext"
         ],
         "types": [ "node"],
-        "moduleResolution": "node",
+        "moduleResolution": "nodenext",
         "traceResolution": false,
         "esModuleInterop": true,
         "incremental": false,

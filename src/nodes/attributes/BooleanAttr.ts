@@ -1,6 +1,6 @@
-import { SpecType } from "../../crate/SpecType"
-import { UsdNode } from "../usd/UsdNode"
-import type { Variability } from "../../crate/Variability"
+import { SpecType } from "../../crate/SpecType.js"
+import { UsdNode } from "../usd/UsdNode.js"
+import type { Variability } from "../../crate/Variability.js"
 
 export class BooleanAttr extends UsdNode {
     value: boolean

@@ -1,5 +1,5 @@
-import { UsdNode } from "../usd/UsdNode"
-import { Attribute } from "../attributes/Attribute"
+import { UsdNode } from "../usd/UsdNode.js"
+import { Attribute } from "../attributes/Attribute.js"
 
 export class NonboundableLightBase extends UsdNode {
     // set enableColorTemperature(value: boolean | undefined) {

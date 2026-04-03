@@ -1,3 +1,3 @@
-import { UsdNode } from "./UsdNode"
+import { UsdNode } from "./UsdNode.js"
 
 export class SchemaBase extends UsdNode { }

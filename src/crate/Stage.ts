@@ -1,5 +1,5 @@
 import { Crate } from "./Crate.js"
-import { Reader } from "./Reader"
+import { Reader } from "./Reader.js"
 import type { UsdNode } from "../nodes/usd/UsdNode.js"
 
 export class Stage {

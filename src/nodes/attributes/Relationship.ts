@@ -1,7 +1,7 @@
-import type { ListOp } from "../../types/ListOp"
-import { SpecType } from "../../crate/SpecType"
-import { UsdNode } from "../usd/UsdNode"
-import { Variability } from "../../crate/Variability"
+import type { ListOp } from "../../types/ListOp.js"
+import { SpecType } from "../../crate/SpecType.js"
+import { UsdNode } from "../usd/UsdNode.js"
+import { Variability } from "../../crate/Variability.js"
 
 export class Relationship extends UsdNode {
     value: ListOp<UsdNode>

@@ -1,14 +1,13 @@
-import { CrateDataType } from "../../crate/CrateDataType"
-import { Crate } from "../../crate/Crate"
-import { isPrim, SpecType } from "../../crate/SpecType"
-import type { Tokens } from "../../crate/Tokens"
+import { CrateDataType } from "../../crate/CrateDataType.js"
+import { Crate } from "../../crate/Crate.js"
+import { isPrim, SpecType } from "../../crate/SpecType.js"
+import type { Tokens } from "../../crate/Tokens.js"
 import { ValueRep } from "../../crate/ValueRep.js"
-import { TypedTimeSamples } from "../../crate/TypedTimeSamples"
-import { JUMP_NEXT_IS_CHILD_JUMP_TO_SIBLING, JUMP_NEXT_IS_CHILD_NO_SIBLINGS, JUMP_NO_CHILD_NEXT_IS_SIBLING, JUMP_NO_CHILD_NO_SIBLINGS } from "../../crate/Paths"
-import type { Specifier } from "../../crate/Specifier"
-import type { ListOp } from "../../types/ListOp"
-import type { Variability } from "../../crate/Variability"
-import { UserInfo } from "node:os"
+import { TypedTimeSamples } from "../../crate/TypedTimeSamples.js"
+import { JUMP_NEXT_IS_CHILD_JUMP_TO_SIBLING, JUMP_NEXT_IS_CHILD_NO_SIBLINGS, JUMP_NO_CHILD_NEXT_IS_SIBLING, JUMP_NO_CHILD_NO_SIBLINGS } from "../../crate/Paths.js"
+import type { Specifier } from "../../crate/Specifier.js"
+import type { ListOp } from "../../types/ListOp.js"
+import type { Variability } from "../../crate/Variability.js"
 
 // Prim
 //   Attribute (is a property)

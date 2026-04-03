@@ -1,9 +1,9 @@
-import { Variability } from "../../crate/Variability"
-import { Vec2fArrayAttr } from "../attributes/Vec2fArrayAttr"
-import { Vec3fArrayAttr } from "../attributes/Vec3fArrayAttr"
-import { VariabilityAttr } from "../attributes/VariabilityAttr"
-import { Gprim } from "./Gprim"
-import { Attribute } from "../attributes/Attribute"
+import { Variability } from "../../crate/Variability.js"
+import { Vec2fArrayAttr } from "../attributes/Vec2fArrayAttr.js"
+import { Vec3fArrayAttr } from "../attributes/Vec3fArrayAttr.js"
+import { VariabilityAttr } from "../attributes/VariabilityAttr.js"
+import { Gprim } from "./Gprim.js"
+import { Attribute } from "../attributes/Attribute.js"
 
 // Cube size
 // Sphere radius

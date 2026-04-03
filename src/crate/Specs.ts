@@ -1,6 +1,6 @@
-import type { Reader } from "./Reader"
-import type { SpecType } from "./SpecType"
-import type { Writer } from "./Writer"
+import type { Reader } from "./Reader.js"
+import type { SpecType } from "./SpecType.js"
+import type { Writer } from "./Writer.js"
 
 export class Specs {
     pathIndexes: number[]

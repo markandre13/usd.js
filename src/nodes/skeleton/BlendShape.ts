@@ -1,10 +1,10 @@
-import { Specifier } from "../../crate/Specifier"
-import { SpecType } from "../../crate/SpecType"
-import { Variability } from "../../crate/Variability"
-import { IntArrayAttr } from "../attributes/IntArrayAttr"
-import { Vec3fArrayAttr } from "../attributes/Vec3fArrayAttr"
-import { Typed } from "../usd/Typed"
-import { UsdNode } from "../usd/UsdNode"
+import { Specifier } from "../../crate/Specifier.js"
+import { SpecType } from "../../crate/SpecType.js"
+import { Variability } from "../../crate/Variability.js"
+import { IntArrayAttr } from "../attributes/IntArrayAttr.js"
+import { Vec3fArrayAttr } from "../attributes/Vec3fArrayAttr.js"
+import { Typed } from "../usd/Typed.js"
+import { UsdNode } from "../usd/UsdNode.js"
 
 /**
  * Describes a target blend shape, possibly containing inbetween shapes.

@@ -1,8 +1,8 @@
-import { Variability } from "../../../crate/Variability"
-import { Attribute } from "../../attributes/Attribute"
-import { StringAttr } from "../../attributes/StringAttr"
-import { TokenAttr } from "../../attributes/TokenAttr"
-import { Shader } from "../Shader"
+import { Variability } from "../../../crate/Variability.js"
+import { Attribute } from "../../attributes/Attribute.js"
+import { StringAttr } from "../../attributes/StringAttr.js"
+import { TokenAttr } from "../../attributes/TokenAttr.js"
+import { Shader } from "../Shader.js"
 
 /**
  * Blender 'UV Map' input node: Retrieves a UV Map from the geometry

@@ -1,12 +1,12 @@
-import { Specifier } from "../../crate/Specifier"
-import { SpecType } from "../../crate/SpecType"
-import type { UsdNode } from "../usd/UsdNode"
-import { Variability } from "../../crate/Variability"
-import { Attribute } from "../attributes/Attribute"
-import { Boundable } from "../geometry/Boundable"
-import { ListOp } from "../../types/ListOp"
-import { SkelAnimation } from "./SkelAnimation"
-import { Relationship } from "../attributes/Relationship"
+import { Specifier } from "../../crate/Specifier.js"
+import { SpecType } from "../../crate/SpecType.js"
+import type { UsdNode } from "../usd/UsdNode.js"
+import { Variability } from "../../crate/Variability.js"
+import { Attribute } from "../attributes/Attribute.js"
+import { Boundable } from "../geometry/Boundable.js"
+import { ListOp } from "../../types/ListOp.js"
+import { SkelAnimation } from "./SkelAnimation.js"
+import { Relationship } from "../attributes/Relationship.js"
 
 /**
  * Describes a skeleton.

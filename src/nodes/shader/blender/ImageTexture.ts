@@ -1,9 +1,9 @@
-import { Variability } from "../../../crate/Variability"
-import { AssetPathAttr } from "../../attributes/AssetPathAttr"
-import { Attribute } from "../../attributes/Attribute"
-import { TokenAttr } from "../../attributes/TokenAttr"
-import { UsdNode } from "../../usd/UsdNode"
-import { Shader } from "../Shader"
+import { Variability } from "../../../crate/Variability.js"
+import { AssetPathAttr } from "../../attributes/AssetPathAttr.js"
+import { Attribute } from "../../attributes/Attribute.js"
+import { TokenAttr } from "../../attributes/TokenAttr.js"
+import { UsdNode } from "../../usd/UsdNode.js"
+import { Shader } from "../Shader.js"
 
 export type WrapMode = "black" | "clamp" | "repeat" | "mirror" | "useMetadata"
 

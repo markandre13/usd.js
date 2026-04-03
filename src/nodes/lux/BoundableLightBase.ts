@@ -1,6 +1,6 @@
-import { Attribute } from "../attributes/Attribute"
-import { StringAttr } from "../attributes/StringAttr"
-import { Boundable } from "../geometry/Boundable"
+import { Attribute } from "../attributes/Attribute.js"
+import { StringAttr } from "../attributes/StringAttr.js"
+import { Boundable } from "../geometry/Boundable.js"
 
 /**
  * Base class for intrinsic lights that are boundable.

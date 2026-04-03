@@ -1,7 +1,7 @@
-import { Specifier } from "../../crate/Specifier"
-import { SpecType } from "../../crate/SpecType"
-import type { UsdNode } from "../usd/UsdNode"
-import { Boundable } from "../geometry/Boundable"
+import { Specifier } from "../../crate/Specifier.js"
+import { SpecType } from "../../crate/SpecType.js"
+import type { UsdNode } from "../usd/UsdNode.js"
+import { Boundable } from "../geometry/Boundable.js"
 
 /**
  * Concrete prim schema for a transform, which implements Xformable

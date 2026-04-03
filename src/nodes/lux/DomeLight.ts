@@ -1,10 +1,10 @@
-import { Specifier } from "../../crate/Specifier"
-import { SpecType } from "../../crate/SpecType"
-import type { UsdNode } from "../usd/UsdNode"
-import { AssetPathAttr } from "../attributes/AssetPathAttr"
-import { NonboundableLightBase } from "./NonboundableLightBase"
-import { Attribute } from "../attributes/Attribute"
-import { Variability } from "../../crate/Variability"
+import { Specifier } from "../../crate/Specifier.js"
+import { SpecType } from "../../crate/SpecType.js"
+import type { UsdNode } from "../usd/UsdNode.js"
+import { AssetPathAttr } from "../attributes/AssetPathAttr.js"
+import { NonboundableLightBase } from "./NonboundableLightBase.js"
+import { Attribute } from "../attributes/Attribute.js"
+import { Variability } from "../../crate/Variability.js"
 
 /**
  * Light emitted inward from a distant external environment,

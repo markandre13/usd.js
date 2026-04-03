@@ -1,9 +1,9 @@
-import { Specifier } from "../../crate/Specifier"
-import { SpecType } from "../../crate/SpecType"
-import type { UsdNode } from "../usd/UsdNode"
-import { StringAttr } from "../attributes/StringAttr"
-import { NodeGraph } from "./NodeGraph"
-import { Attribute } from "../attributes/Attribute"
+import { Specifier } from "../../crate/Specifier.js"
+import { SpecType } from "../../crate/SpecType.js"
+import type { UsdNode } from "../usd/UsdNode.js"
+import { StringAttr } from "../attributes/StringAttr.js"
+import { NodeGraph } from "./NodeGraph.js"
+import { Attribute } from "../attributes/Attribute.js"
 
 /**
  * A Material provides a container into which multiple "render contexts"

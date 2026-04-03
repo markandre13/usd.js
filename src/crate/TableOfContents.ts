@@ -1,7 +1,7 @@
-import { Section } from "./Section"
-import type { Reader } from "./Reader"
-import type { Writer } from "./Writer"
-import type { SectionName } from "./SectionName"
+import { Section } from "./Section.js"
+import type { Reader } from "./Reader.js"
+import type { Writer } from "./Writer.js"
+import type { SectionName } from "./SectionName.js"
 
 export class TableOfContents {
     sections = new Map<string, Section>()

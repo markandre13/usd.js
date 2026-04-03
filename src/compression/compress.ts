@@ -1,6 +1,6 @@
 // git clone https://github.com/PixarAnimationStudios/OpenUSD.git
 // pxr/usd/sdf/crateFile.h
-import { compressBlock, compressBound, decompressBlock, LZ4_MAX_INPUT_SIZE } from "./lz4"
+import { compressBlock, compressBound, decompressBlock, LZ4_MAX_INPUT_SIZE } from "./lz4.js"
 
 type Index = number
 export type StringIndex = Index

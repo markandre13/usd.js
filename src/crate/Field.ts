@@ -1,6 +1,6 @@
-import type { TokenIndex } from "../compression/compress"
-import { Crate } from "./Crate"
-import type { ValueRep } from "./ValueRep"
+import type { TokenIndex } from "../compression/compress.js"
+import { Crate } from "./Crate.js"
+import type { ValueRep } from "./ValueRep.js"
 
 export class Field {
     tokenIndex: TokenIndex

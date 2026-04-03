@@ -1,13 +1,13 @@
-import { ListOp } from "../../types/ListOp"
-import { Specifier } from "../../crate/Specifier"
-import { SpecType } from "../../crate/SpecType"
-import { Variability } from "../../crate/Variability"
-import { IntArrayAttr } from "../attributes/IntArrayAttr"
-import { Relationship } from "../attributes/Relationship"
-import { VariabilityAttr } from "../attributes/VariabilityAttr"
-import { Material } from "../shader/Material"
-import { Typed } from "../usd/Typed"
-import { UsdNode } from "../usd/UsdNode"
+import { ListOp } from "../../types/ListOp.js"
+import { Specifier } from "../../crate/Specifier.js"
+import { SpecType } from "../../crate/SpecType.js"
+import { Variability } from "../../crate/Variability.js"
+import { IntArrayAttr } from "../attributes/IntArrayAttr.js"
+import { Relationship } from "../attributes/Relationship.js"
+import { VariabilityAttr } from "../attributes/VariabilityAttr.js"
+import { Material } from "../shader/Material.js"
+import { Typed } from "../usd/Typed.js"
+import { UsdNode } from "../usd/UsdNode.js"
 
 /**
  * Encodes a subset of a piece of geometry (i.e. a UsdGeomImageable) 

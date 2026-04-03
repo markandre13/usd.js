@@ -1,7 +1,7 @@
-import type { Reader } from "./Reader"
-import { Section } from "./Section"
-import { SectionName } from "./SectionName"
-import { Writer } from "./Writer"
+import type { Reader } from "./Reader.js"
+import { Section } from "./Section.js"
+import { SectionName } from "./SectionName.js"
+import { Writer } from "./Writer.js"
 
 export class FieldSets {
     fieldset_indices: number[]

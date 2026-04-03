@@ -1,5 +1,5 @@
-import { SpecType } from "../../crate/SpecType"
-import { UsdNode } from "../usd/UsdNode"
+import { SpecType } from "../../crate/SpecType.js"
+import { UsdNode } from "../usd/UsdNode.js"
 
 export class Attribute extends UsdNode {
     private _fields: (node: UsdNode) => void

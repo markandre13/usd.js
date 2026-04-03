@@ -1,10 +1,10 @@
-import { CrateDataType } from "../../crate/CrateDataType"
-import { Variability } from "../../crate/Variability"
-import { TimeSamples } from "../../types/TimeSamples"
-import { Attribute } from "../attributes/Attribute"
-import { StringAttr } from "../attributes/StringAttr"
-import { UsdNode } from "../usd/UsdNode"
-import { Imageable } from "./Imageable"
+import { CrateDataType } from "../../crate/CrateDataType.js"
+import { Variability } from "../../crate/Variability.js"
+import { TimeSamples } from "../../types/TimeSamples.js"
+import { Attribute } from "../attributes/Attribute.js"
+import { StringAttr } from "../attributes/StringAttr.js"
+import { UsdNode } from "../usd/UsdNode.js"
+import { Imageable } from "./Imageable.js"
 
 /**
  * Base class for all transformable prims, which allows arbitrary

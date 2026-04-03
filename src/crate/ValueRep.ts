@@ -6,16 +6,16 @@
 // (zero vectors, identity matrices, etc).  For values that aren't stored
 // inline, the 6 data bytes are the offset from the start of the file to the
 
-import { hexdump } from "../detail/hexdump"
-import { decodeIntegers } from "../compression/integers"
-import { CrateDataType, ListOpHeader } from "./CrateDataType"
-import type { Crate } from "./Crate"
-import { Specifier } from "./Specifier"
+import { hexdump } from "../detail/hexdump.js"
+import { decodeIntegers } from "../compression/integers.js"
+import { CrateDataType, ListOpHeader } from "./CrateDataType.js"
+import type { Crate } from "./Crate.js"
+import { Specifier } from "./Specifier.js"
 import { UsdNode } from "../nodes/usd/UsdNode.js"
 import { Variability } from "./Variability.js"
-import { decompressFromBuffer } from "../compression/compress"
-import type { ListOp } from "../types/ListOp"
-import { TypedTimeSamples } from "./TypedTimeSamples"
+import { decompressFromBuffer } from "../compression/compress.js"
+import type { ListOp } from "../types/ListOp.js"
+import { TypedTimeSamples } from "./TypedTimeSamples.js"
 
 // see tinyusdz CrateReader::UnpackValueRep() for implementation examples
 

@@ -5,6 +5,6 @@
  *
  * defined in pxr/usd/usdShade/schema.usda
  */
-import { Typed } from "../usd/Typed"
+import { Typed } from "../usd/Typed.js"
 
 export class NodeGraph extends Typed { }

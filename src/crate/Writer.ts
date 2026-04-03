@@ -1,8 +1,8 @@
-import { compressToBuffer } from "../compression/compress"
-import { encodeIntegers } from "../compression/integers"
-import { compressBound } from "../compression/lz4"
-import { hexdump } from "../detail/hexdump"
-import { CrateDataType } from "./CrateDataType"
+import { compressToBuffer } from "../compression/compress.js"
+import { encodeIntegers } from "../compression/integers.js"
+import { compressBound } from "../compression/lz4.js"
+import { hexdump } from "../detail/hexdump.js"
+import { CrateDataType } from "./CrateDataType.js"
 
 // pxr/usd/usdGeom/schema.usda
 

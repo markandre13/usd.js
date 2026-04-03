@@ -1,8 +1,8 @@
-import { Specifier } from "../../crate/Specifier"
-import { SpecType } from "../../crate/SpecType"
-import type { UsdNode } from "../usd/UsdNode"
-import { Imageable } from "./Imageable"
-import { Xformable } from "./Xformable"
+import { Specifier } from "../../crate/Specifier.js"
+import { SpecType } from "../../crate/SpecType.js"
+import type { UsdNode } from "../usd/UsdNode.js"
+import { Imageable } from "./Imageable.js"
+import { Xformable } from "./Xformable.js"
 
 /**
  * Scope is the simplest grouping primitive, and does not carry the

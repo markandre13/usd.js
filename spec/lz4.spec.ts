@@ -3,8 +3,8 @@
 // frame format
 
 import { expect } from "chai"
-import { compressBlock, compressBound, decompressBlock } from "../src/compression/lz4"
-import { hexdump, parseHexDump } from "../src/detail/hexdump"
+import { compressBlock, compressBound, decompressBlock } from "../src/compression/lz4.js"
+import { hexdump, parseHexDump } from "../src/detail/hexdump.js"
 
 describe("lz4", () => {
     it("0 bytes", () => {

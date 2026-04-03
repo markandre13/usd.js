@@ -1,5 +1,5 @@
 import { Reader } from "./Reader.js"
-import type { Writer } from "./Writer"
+import type { Writer } from "./Writer.js"
 
 export class BootStrap {
     indent: string

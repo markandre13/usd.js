@@ -1,6 +1,6 @@
-import { Variability } from "../../crate/Variability"
-import { BooleanAttr } from "../attributes/BooleanAttr"
-import { Boundable } from "./Boundable"
+import { Variability } from "../../crate/Variability.js"
+import { BooleanAttr } from "../attributes/BooleanAttr.js"
+import { Boundable } from "./Boundable.js"
 
 /**
  * Base class for all geometric primitives.

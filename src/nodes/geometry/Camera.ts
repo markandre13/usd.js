@@ -1,9 +1,9 @@
-import { Specifier } from "../../crate/Specifier"
-import { SpecType } from "../../crate/SpecType"
-import type { UsdNode } from "../usd/UsdNode"
-import { Attribute } from "../attributes/Attribute"
-import { StringAttr } from "../attributes/StringAttr"
-import { Boundable } from "./Boundable"
+import { Specifier } from "../../crate/Specifier.js"
+import { SpecType } from "../../crate/SpecType.js"
+import type { UsdNode } from "../usd/UsdNode.js"
+import { Attribute } from "../attributes/Attribute.js"
+import { StringAttr } from "../attributes/StringAttr.js"
+import { Boundable } from "./Boundable.js"
 
 /**
  * Transformable camera.

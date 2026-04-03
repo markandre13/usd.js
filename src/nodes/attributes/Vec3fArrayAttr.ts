@@ -1,6 +1,6 @@
-import { SpecType } from "../../crate/SpecType"
-import { Variability } from "../../crate/Variability"
-import { UsdNode } from "../usd/UsdNode"
+import { SpecType } from "../../crate/SpecType.js"
+import { Variability } from "../../crate/Variability.js"
+import { UsdNode } from "../usd/UsdNode.js"
 
 export class Vec3fArrayAttr extends UsdNode {
     value: ArrayLike<number>

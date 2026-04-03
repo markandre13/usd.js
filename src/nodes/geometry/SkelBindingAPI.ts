@@ -1,6 +1,6 @@
-import { ListOp } from "../../types/ListOp"
-import { BlendShape } from "../skeleton/BlendShape"
-import type { Skeleton } from "../skeleton/Skeleton"
+import { ListOp } from "../../types/ListOp.js"
+import { BlendShape } from "../skeleton/BlendShape.js"
+import type { Skeleton } from "../skeleton/Skeleton.js"
 
 /**
  * Provides API for authoring and extracting all the skinning-related

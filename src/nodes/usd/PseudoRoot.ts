@@ -1,6 +1,6 @@
-import { Crate } from "../../crate/Crate"
-import { SpecType } from "../../crate/SpecType"
-import { UsdNode } from "./UsdNode"
+import { Crate } from "../../crate/Crate.js"
+import { SpecType } from "../../crate/SpecType.js"
+import { UsdNode } from "./UsdNode.js"
 
 // blender mesh options and how they map to usd
 //   shade: flat | smooth

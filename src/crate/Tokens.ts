@@ -1,8 +1,8 @@
-import { hexdump } from "../detail/hexdump"
-import { compressToBuffer, decompressFromBuffer } from "../compression/compress"
-import type { Reader } from "./Reader"
-import type { Writer } from "./Writer"
-import { compressBound } from "../compression/lz4"
+import { hexdump } from "../detail/hexdump.js"
+import { compressToBuffer, decompressFromBuffer } from "../compression/compress.js"
+import type { Reader } from "./Reader.js"
+import type { Writer } from "./Writer.js"
+import { compressBound } from "../compression/lz4.js"
 
 // https://docs.nvidia.com/learn-openusd/latest/stage-setting/index.html
 // stage, layer

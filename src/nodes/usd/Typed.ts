@@ -1,5 +1,5 @@
-import type { Specifier } from "../../crate/Specifier"
-import { SchemaBase } from "./SchemaBase"
+import type { Specifier } from "../../crate/Specifier.js"
+import { SchemaBase } from "./SchemaBase.js"
 
 /**
  * The base class for all _typed_ schemas (those that can impart a
